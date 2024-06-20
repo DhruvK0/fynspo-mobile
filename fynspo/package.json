@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^1.2.1",
     "@expo/metro-runtime": "~3.2.1",
     "@expo/vector-icons": "^14.0.0",
     "dom-to-image": "^2.6.0",
@@ -22,7 +23,8 @@
     "react-native-gesture-handler": "~2.16.1",
     "react-native-reanimated": "~3.10.1",
     "react-native-view-shot": "3.8.0",
-    "react-native-web": "~0.19.10"
+    "react-native-web": "~0.19.10",
+    "undefined": "u/expo/metro-runtime"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
