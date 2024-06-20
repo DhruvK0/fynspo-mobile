@@ -13,12 +13,44 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as MediaLibrary from 'expo-media-library';
 import { captureRef } from 'react-native-view-shot';
 import domtoimage from 'dom-to-image';
-import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
+import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-expo";
 import Constants from "expo-constants"
 import SignUpScreen from "./components/SignUpScreen";
 import SignInScreen from "./components/SignInScreen";
+import * as SecureStore from "expo-secure-store";
 
 const PlaceholderImage = require('./assets/images/background-image.png');
+
+const tokenCache = {
+  async getToken(key) {
+    try {
+      return SecureStore.getItemAsync(key);
+    } catch (err) {
+      return null;
+    }
+  },
+  async saveToken(key, value) {
+    try {
+      return SecureStore.setItemAsync(key, value);
+    } catch (err) {
+      return;
+    }
+  },
+};
+
+const SignOut = () => {
+  const { isLoaded,signOut } = useAuth();
+  if (!isLoaded) {
+    return null;
+  }
+  return (
+    <View>
+      <IconButton icon="logout" label="Logout" onPress={() => {
+          signOut();
+        }} />
+    </View>
+  );
+};
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -93,10 +125,16 @@ export default function App() {
 
 
   return (
-    <ClerkProvider publishableKey={Constants.expoConfig.extra.clerkPublishableKey}>
+    <ClerkProvider 
+      publishableKey={Constants.expoConfig.extra.clerkPublishableKey}
+      tokenCache={tokenCache}
+    >
     <GestureHandlerRootView style={styles.container}>
     <View style={styles.container}>
       <SignedIn>
+        <View>
+          <SignOut />
+        </View>
         <View style={styles.imageContainer}>
           <View ref={imageRef} collapsable={false}>
             <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} />
