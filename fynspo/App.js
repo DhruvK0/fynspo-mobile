@@ -1,23 +1,26 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Platform } from 'react-native';
 import ImageViewer from './components/ImageViewer';
-import Button from './components/Button';
+import Button from './components/Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
-import { useState, useRef } from 'react';
-import CircleButton from './components/CircleButton';
-import IconButton from './components/IconButton';
+import { useState, useRef, useEffect } from 'react';
+import CircleButton from './components/Buttons/CircleButton';
+import IconButton from './components/Buttons/IconButton';
 import EmojiPicker from "./components/EmojiPicker";
 import EmojiList from './components/EmojiList';
 import EmojiSticker from './components/EmojiSticker';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as MediaLibrary from 'expo-media-library';
+import * as Camera from 'expo-camera';
 import { captureRef } from 'react-native-view-shot';
 import domtoimage from 'dom-to-image';
 import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-expo";
 import Constants from "expo-constants"
-import SignUpScreen from "./components/SignUpScreen";
-import SignInScreen from "./components/SignInScreen";
+import SignUpScreen from "./components/Auth/SignUpScreen";
+import SignInScreen from "./components/Auth/SignInScreen";
 import * as SecureStore from "expo-secure-store";
+import AuthContainer from './components/Auth/AuthContainer';
+import { makeApiCall } from './components/GetRequests';
 
 const PlaceholderImage = require('./assets/images/background-image.png');
 
@@ -58,20 +61,49 @@ export default function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pickedEmoji, setPickedEmoji] = useState(null);
   const [status, requestPermission] = MediaLibrary.usePermissions();
+  const [cameraPermission, requestCameraPermission] = Camera.useCameraPermissions();
+  const [clothing, setClothing] = useState(null);
+  const [category, setCategory] = useState("Select Category");
   const imageRef = useRef();
 
+  
+  //create a useefffect that console logs changes to the clothing state
+  useEffect(() => {
+    console.log(clothing);
+  }, [clothing]);
 
-  const pickImageAsync = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+
+  const pickCameraImageAsync = async () => {
+    let result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 1,
+      base64: true,
     });
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
+      const searchResults = await makeApiCall(result.assets[0].base64);
+      setClothing(searchResults);
       setShowAppOptions(true);
     } else {
-      alert('You did not select any image.');
+      // alert('You did not select any image.');
+    }
+  };
+
+  const pickLibraryImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      const searchResults = await makeApiCall(result.assets[0].base64);
+      setClothing(searchResults);
+      setShowAppOptions(true);
+    } else {
+      // alert('You did not select any image.');
     }
   };
 
@@ -123,6 +155,10 @@ export default function App() {
     requestPermission();
   }
 
+  if (cameraPermission === null) {
+    requestCameraPermission();
+  }
+
 
   return (
     <ClerkProvider 
@@ -131,10 +167,8 @@ export default function App() {
     >
     <GestureHandlerRootView style={styles.container}>
     <View style={styles.container}>
-      <SignedIn>
-        <View>
-          <SignOut />
-        </View>
+      {/* <SignedIn> */}
+        
         <View style={styles.imageContainer}>
           <View ref={imageRef} collapsable={false}>
             <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} />
@@ -145,26 +179,35 @@ export default function App() {
           <View style={styles.optionsContainer}>
             <View style={styles.optionsRow}>
               <IconButton icon="refresh" label="Reset" onPress={onReset} />
-              <CircleButton onPress={onAddSticker} />
+              <CircleButton onPress={onAddSticker} iconName={"add"} />
               <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+
             </View>
           </View>
         ) : (
           <View style={styles.footerContainer}>
-            <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
-            <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+            <View style={styles.buttonContainer}>
+            <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
+            <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>
+            {/* <Button label="Use this photo" onPress={() => setShowAppOptions(true)} /> */}
+            
+          </View>
+          <View>
+          <SignOut />
+        </View>
           </View>
         )}
         <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
           <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
         </EmojiPicker>
+        
+        
         <StatusBar style="auto" />
-      </SignedIn>
-
+      {/* </SignedIn> */}
+{/* 
       <SignedOut>
-        <SignInScreen />
-        <SignUpScreen />
-      </SignedOut>
+        <AuthContainer />
+      </SignedOut> */}
     </View>
     </GestureHandlerRootView>
     </ClerkProvider>
@@ -174,12 +217,13 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
     footerContainer: {
-      flex: 1 / 3,
+      // flex: 1 / 3,
       alignItems: 'center',
+      marginTop: 20,
     },},
     optionsContainer: {
       position: 'absolute',
@@ -188,5 +232,11 @@ const styles = StyleSheet.create({
     optionsRow: {
       alignItems: 'center',
       flexDirection: 'row',
+    },
+    buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '50%', // Adjust the width as needed
+    marginTop: 20,
     },
 });
