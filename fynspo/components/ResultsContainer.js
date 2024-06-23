@@ -1,0 +1,1 @@
+//Component to render the results of the search
