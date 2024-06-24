@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Platform } from 'react-native';
+import { StyleSheet, Text, View, Platform, ScrollView, FlatList } from 'react-native';
 import ImageViewer from './components/ImageViewer';
 import Button from './components/Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,6 +21,12 @@ import SignInScreen from "./components/Auth/SignInScreen";
 import * as SecureStore from "expo-secure-store";
 import AuthContainer from './components/Auth/AuthContainer';
 import { makeApiCall } from './components/GetRequests';
+import CategoryButton from './components/Buttons/CategoryButton';
+import { SimpleGrid } from 'react-native-super-grid';
+import Example, {SuperGridExample} from './components/FlatGrid';
+import { A } from '@expo/html-elements';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 
 const PlaceholderImage = require('./assets/images/background-image.png');
 
@@ -64,12 +70,23 @@ export default function App() {
   const [cameraPermission, requestCameraPermission] = Camera.useCameraPermissions();
   const [clothing, setClothing] = useState(null);
   const [category, setCategory] = useState("Select Category");
+  const [loading, setLoading] = useState(true);
   const imageRef = useRef();
 
-  
+  //create a useeffect to console log cateogry changes
+  useEffect(() => {
+    console.log(category);
+  }, [category]);
   //create a useefffect that console logs changes to the clothing state
   useEffect(() => {
-    console.log(clothing);
+    //if cltohing is not null set loading to false
+    if (clothing) {
+
+      //set the category as the first key in the clothing object
+      setCategory(Object.keys(clothing)[0]);
+
+      setLoading(false);
+    }
   }, [clothing]);
 
 
@@ -82,9 +99,9 @@ export default function App() {
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
       const searchResults = await makeApiCall(result.assets[0].base64);
       setClothing(searchResults);
-      setShowAppOptions(true);
     } else {
       // alert('You did not select any image.');
     }
@@ -99,9 +116,13 @@ export default function App() {
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
-      const searchResults = await makeApiCall(result.assets[0].base64);
-      setClothing(searchResults);
       setShowAppOptions(true);
+      const searchResults = await makeApiCall(result.assets[0].base64);
+      //sleep for 2 seconds
+      setClothing(searchResults);
+      
+
+      // setClothing(searchResults);
     } else {
       // alert('You did not select any image.');
     }
@@ -167,40 +188,76 @@ export default function App() {
     >
     <GestureHandlerRootView style={styles.container}>
     <View style={styles.container}>
-      {/* <SignedIn> */}
-        
+      {/* <SignedIn> */}        
         <View style={styles.imageContainer}>
           <View ref={imageRef} collapsable={false}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
             <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} />
             {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
           </View>
         </View>
         {showAppOptions ? (
           <View style={styles.optionsContainer}>
-            <View style={styles.optionsRow}>
-              <IconButton icon="refresh" label="Reset" onPress={onReset} />
-              <CircleButton onPress={onAddSticker} iconName={"add"} />
-              <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
-
-            </View>
+            {loading ? 
+            //This needs to be a modal with loader spinner in it
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+                <CategoryButton label={"Hats"} loading={true}/>
+                <CategoryButton label={"Glasses"}/>
+                <CategoryButton label={"Tops"}/>
+                <CategoryButton label={"Bottoms"}/>
+                <CategoryButton label={"Shoes"}/>
+                <CategoryButton label={"Accessories"}/>
+                <CategoryButton label={"All"}/>
+              </ScrollView> :
+              
+              
+              <View>
+                
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+                  {Object.keys(clothing).map((key, index) => {
+                     return (
+                      <CategoryButton key={index} label={key} onPress={() => setCategory(key)}/>
+                    )
+                  })}
+                </ScrollView>
+                {/* <View style={styles.container}>
+                  <CircleButton
+                    title="Open URL with the system browser"
+                    onPress={() => Linking.openURL(item.product_link)}
+                    style={styles.button}
+                  />
+                  <CircleButton
+                    title="Open URL with an in-app browser"
+                    onPress={() => WebBrowser.openBrowserAsync('https://expo.dev')}
+                    style={styles.button}
+                  />
+                </View> */}
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <SuperGridExample clothing={clothing[category]}/>
+                </ScrollView>
+                <View style={styles.optionsRow}>
+                  
+                  {/* <CircleButton onPress={onAddSticker} iconName={"add"} />
+                  <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} /> */}
+                </View>
+              </View>
+            }
           </View>
         ) : (
           <View style={styles.footerContainer}>
             <View style={styles.buttonContainer}>
             <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
-            <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>
-            {/* <Button label="Use this photo" onPress={() => setShowAppOptions(true)} /> */}
-            
+            <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
           </View>
           <View>
           <SignOut />
         </View>
           </View>
         )}
-        <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        {/* <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
           <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
         </EmojiPicker>
-        
+         */}
         
         <StatusBar style="auto" />
       {/* </SignedIn> */}
@@ -226,8 +283,15 @@ const styles = StyleSheet.create({
       marginTop: 20,
     },},
     optionsContainer: {
-      position: 'absolute',
+      // position: 'absolute',
       bottom: 80,
+      flex: 1,
+    },
+    imageContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '50%',
     },
     optionsRow: {
       alignItems: 'center',
