@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Platform, ScrollView, FlatList } from 'react-native';
+import { StyleSheet, Text, View, Platform, ScrollView, FlatList} from 'react-native';
 import ImageViewer from './components/ImageViewer';
 import Button from './components/Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
@@ -187,12 +187,12 @@ export default function App() {
       tokenCache={tokenCache}
     >
     <GestureHandlerRootView style={styles.container}>
-    <View style={styles.container}>
+    <View style={[styles.container, showAppOptions]}>
       {/* <SignedIn> */}        
         <View style={styles.imageContainer}>
           <View ref={imageRef} collapsable={false}>
             <IconButton icon="refresh" label="Reset" onPress={onReset} />
-            <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} />
+            <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }}/>
             {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
           </View>
         </View>
@@ -200,7 +200,7 @@ export default function App() {
           <View style={styles.optionsContainer}>
             {loading ? 
             //This needs to be a modal with loader spinner in it
-            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{marginTop: 20}}>
                 <CategoryButton label={"Hats"} loading={true}/>
                 <CategoryButton label={"Glasses"}/>
                 <CategoryButton label={"Tops"}/>
@@ -213,45 +213,35 @@ export default function App() {
               
               <View>
                 
-                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} >
                   {Object.keys(clothing).map((key, index) => {
                      return (
                       <CategoryButton key={index} label={key} onPress={() => setCategory(key)}/>
                     )
                   })}
                 </ScrollView>
-                {/* <View style={styles.container}>
-                  <CircleButton
-                    title="Open URL with the system browser"
-                    onPress={() => Linking.openURL(item.product_link)}
-                    style={styles.button}
-                  />
-                  <CircleButton
-                    title="Open URL with an in-app browser"
-                    onPress={() => WebBrowser.openBrowserAsync('https://expo.dev')}
-                    style={styles.button}
-                  />
-                </View> */}
                 <ScrollView showsVerticalScrollIndicator={false}>
                   <SuperGridExample clothing={clothing[category]}/>
                 </ScrollView>
-                <View style={styles.optionsRow}>
+                {/* <View style={styles.optionsRow}>
                   
-                  {/* <CircleButton onPress={onAddSticker} iconName={"add"} />
-                  <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} /> */}
-                </View>
+                  <CircleButton onPress={onAddSticker} iconName={"add"} />
+                  <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+                </View> */}
               </View>
             }
           </View>
         ) : (
-          <View style={styles.footerContainer}>
-            <View style={styles.buttonContainer}>
-            <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
-            <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
-          </View>
           <View>
-          <SignOut />
-        </View>
+              <View style={styles.footerContainer}>
+                <View style={styles.buttonContainer}>
+                  <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
+                  <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
+                </View>
+                <View>
+                  <SignOut />
+                </View>
+              </View>
           </View>
         )}
         {/* <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
@@ -292,6 +282,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       height: '50%',
+      paddingTop: 20,
     },
     optionsRow: {
       alignItems: 'center',
@@ -303,4 +294,10 @@ const styles = StyleSheet.create({
     width: '50%', // Adjust the width as needed
     marginTop: 20,
     },
+    categoryContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+    }
 });
+
