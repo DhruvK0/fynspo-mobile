@@ -105,7 +105,7 @@ export function SuperGridExample({ clothing }) {
             
         <View style={[styles.itemContainer, { backgroundColor: '#fff' }]}>
             <Pressable onPress={() => WebBrowser.openBrowserAsync(item.product_link)}>
-            <Image source={{ uri: item.image }} style={{ width: 100, height: 100 }} />
+            <Image source={{uri: item.image}} style={{width: 150, height: 200, resizeMode: 'contain',}}/>
             <Text style={styles.itemName}>{item.name}</Text>
             <Text style={styles.itemCode}>${item.price}</Text>
             </Pressable>
@@ -124,7 +124,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     borderRadius: 5,
     padding: 10,
-    height: 150,
+    height: 300,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
   itemName: {
     fontSize: 16,
