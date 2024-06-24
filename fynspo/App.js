@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Platform, ScrollView, FlatList} from 'react-native';
+import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions} from 'react-native';
 import ImageViewer from './components/ImageViewer';
 import Button from './components/Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
@@ -29,6 +29,7 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 
 const PlaceholderImage = require('./assets/images/background-image.png');
+const screenHeight = Dimensions.get('window').height;
 
 const tokenCache = {
   async getToken(key) {
@@ -187,63 +188,82 @@ export default function App() {
       tokenCache={tokenCache}
     >
     <GestureHandlerRootView style={styles.container}>
-    <View style={[styles.container, showAppOptions]}>
+    {/* <View style={[styles.container, showAppOptions]}> */}
       {/* <SignedIn> */}        
-        <View style={styles.imageContainer}>
+        {/* <View style={styles.imageContainer}>
           <View ref={imageRef} collapsable={false}>
             <IconButton icon="refresh" label="Reset" onPress={onReset} />
             <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }}/>
             {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
           </View>
-        </View>
+        </View> */}
+
         {showAppOptions ? (
-          <View style={styles.optionsContainer}>
-            {loading ? 
-            //This needs to be a modal with loader spinner in it
-            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{marginTop: 20}}>
-                <CategoryButton label={"Hats"} loading={true}/>
-                <CategoryButton label={"Glasses"}/>
-                <CategoryButton label={"Tops"}/>
-                <CategoryButton label={"Bottoms"}/>
-                <CategoryButton label={"Shoes"}/>
-                <CategoryButton label={"Accessories"}/>
-                <CategoryButton label={"All"}/>
-              </ScrollView> :
-              
-              
-              <View>
-                
-                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} >
-                  {Object.keys(clothing).map((key, index) => {
-                     return (
-                      <CategoryButton key={index} label={key} onPress={() => setCategory(key)}/>
-                    )
-                  })}
-                </ScrollView>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  <SuperGridExample clothing={clothing[category]}/>
-                </ScrollView>
-                {/* <View style={styles.optionsRow}>
-                  
-                  <CircleButton onPress={onAddSticker} iconName={"add"} />
-                  <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
-                </View> */}
+          <View style={[styles.container, showAppOptions]}>
+            <View style={styles.imageContainer}>
+              <View ref={imageRef} collapsable={false}>
+                <IconButton icon="refresh" label="Reset" onPress={onReset} />
+                <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }} height={screenHeight / 5}/>
+                {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
               </View>
-            }
+            </View>
+            <View style={styles.optionsContainer}>
+              {loading ? 
+              //This needs to be a modal with loader spinner in it
+              <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{marginTop: 20}}>
+                  <CategoryButton label={"Hats"} loading={true}/>
+                  <CategoryButton label={"Glasses"}/>
+                  <CategoryButton label={"Tops"}/>
+                  <CategoryButton label={"Bottoms"}/>
+                  <CategoryButton label={"Shoes"}/>
+                  <CategoryButton label={"Accessories"}/>
+                  <CategoryButton label={"All"}/>
+                </ScrollView> :
+                
+                
+                <View>
+                  <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} >
+                    {Object.keys(clothing).map((key, index) => {
+                      return (
+                        <CategoryButton key={index} label={key} onPress={() => setCategory(key)}/>
+                      )
+                    })}
+                  </ScrollView>
+                  <ScrollView showsVerticalScrollIndicator={false}>
+                    <SuperGridExample clothing={clothing[category]}/>
+                  </ScrollView>
+                  {/* <View style={styles.optionsRow}>
+                    
+                    <CircleButton onPress={onAddSticker} iconName={"add"} />
+                    <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+                  </View> */}
+                </View>
+              }
+            </View>
           </View>
         ) : (
-          <View>
-              <View style={styles.footerContainer}>
-                <View style={styles.buttonContainer}>
-                  <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
-                  <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
-                </View>
-                <View>
-                  <SignOut />
-                </View>
+          <View style={[styles.container, showAppOptions]}>
+            <View style={styles.imageContainer}>
+              <View ref={imageRef} collapsable={false}>
+                <IconButton icon="refresh" label="Reset" onPress={onReset} />
+                <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }} height={screenHeight / 2}/>
+                {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
               </View>
+            </View>
+            <View>
+                <View style={styles.footerContainer}>
+                  <View style={styles.buttonContainer}>
+                    <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
+                    <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
+                  </View>
+                  <View>
+                    <SignOut />
+                  </View>
+                </View>
+            </View>
           </View>
         )}
+
         {/* <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
           <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
         </EmojiPicker>
@@ -255,7 +275,7 @@ export default function App() {
       <SignedOut>
         <AuthContainer />
       </SignedOut> */}
-    </View>
+    {/* </View> */}
     </GestureHandlerRootView>
     </ClerkProvider>
   );
