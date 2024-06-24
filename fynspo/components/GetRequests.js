@@ -15,7 +15,6 @@ export async function makeApiCall(requestBody) {
     try {
       const response = await fetch("https://al9bgznmmj.execute-api.us-east-1.amazonaws.com", requestOptions);
       const result = await response.json();
-      console.log(result);
       return result;
     } catch (error) {
       console.error(error);
