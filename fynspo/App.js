@@ -58,7 +58,7 @@ export default function App() {
                   }
 
                   // Use a different style for focused icons
-                  return <MaterialIcons name={iconName} size={40} color={color} style={{ fontWeight: focused ? 'bold' : 'normal' }} />;
+                  return <MaterialIcons name={iconName} size={40} color={color} style={{ fontWeight: focused ? 'bold' : 'normal', paddingTop: 5 }} />;
                 },
                 tabBarActiveTintColor: 'white',
                 tabBarInactiveTintColor: 'white',
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 35, // Adjust this value based on your device's bottom safe area
+    height: 32, // Adjust this value based on your device's bottom safe area
   },
 });
 
