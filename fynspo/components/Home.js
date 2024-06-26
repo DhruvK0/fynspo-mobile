@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions, SafeAreaView} from 'react-native';
+import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions, SafeAreaView, ActivityIndicator} from 'react-native';
 import ImageViewer from './ImageViewer';
 import Button from './Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,6 +24,7 @@ import CategoryButton from './Buttons/CategoryButton';
 import Example, {SuperGridExample} from './FlatGrid';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
+
 
 const PlaceholderImage = require('../assets/images/background-image.png');
 const screenHeight = Dimensions.get('window').height;
@@ -156,23 +157,35 @@ export default function Home() {
     }
 
     return (
-        <View>
+        <View style={{backgroundColor: '000'}}>
         {showAppOptions ? (
           <View style={[styles.container, showAppOptions]}>
             <View style={styles.optionsContainer}>
               {loading ? 
-              //This needs to be a modal with loader spinner in it
-              <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{marginTop: 20}}>
-                  <CategoryButton label={"Hats"} loading={true}/>
-                  <CategoryButton label={"Glasses"}/>
-                  <CategoryButton label={"Tops"}/>
-                  <CategoryButton label={"Bottoms"}/>
-                  <CategoryButton label={"Shoes"}/>
-                  <CategoryButton label={"Accessories"}/>
-                  <CategoryButton label={"All"}/>
-                </ScrollView> :
-                
-                
+                <SafeAreaView>
+                  <ScrollView
+                    ref={scrollViewRef}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    stickyHeaderIndices={isSticky ? [1] : []}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <View style={styles.imageContainer} ref={imageRef} collapsable={false}>
+                      <IconButton icon="refresh" label="Reset" onPress={onReset} />
+                      <ImageViewer 
+                        placeholderImageSource={PlaceholderImage} 
+                        selectedImage={selectedImage} 
+                        style={showAppOptions && { height: '100%', width: '100%' }} 
+                        height={screenHeight / 3.5}
+                      />
+                      {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+                    </View>
+                    <View style={styles.loaderContainer}>
+                      <ActivityIndicator size="large" color="#8400ff"/> 
+                      <Text style={{color: 'white', textAlign: 'center', marginTop: 10, fontSize: 20, fontWeight: 'bold'}}>Getting Your Matches</Text>           
+                    </View>
+                  </ScrollView>
+                </SafeAreaView> :
                 <SafeAreaView>
                   <ScrollView
                     ref={scrollViewRef}
@@ -220,23 +233,27 @@ export default function Home() {
           </View>
         ) : (
           <View style={[styles.container, showAppOptions]}>
-            <View style={styles.imageContainer}>
-              <View ref={imageRef} collapsable={false}>
-                <IconButton icon="refresh" label="Reset" onPress={onReset} />
-                <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }} height={screenHeight / 2}/>
-                {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
-              </View>
-            </View>
-            <View>
-                <View style={styles.footerContainer}>
-                  <View style={styles.buttonContainer}>
-                    <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
-                    <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
-                  </View>
-                  <View>
-                    {/* <SignOut /> */}
-                  </View>
+            <View style={styles.optionsContainer}>
+              <View style={styles.imageContainer}>
+                <View ref={imageRef} collapsable={false}>
+                  <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }} height={screenHeight / 2}/>
+                  {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
                 </View>
+              </View>
+              <View>
+                  <View style={styles.footerContainer}>
+                    <View style={styles.buttonContainer}>
+                      <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
+                      <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
+                    </View>
+                    {/* <View style={styles.loaderContainer}>
+                                <ActivityIndicator size="large" color="#8400ff"/>            
+                              </View> */}
+                    <View>
+                      {/* <SignOut /> */}
+                    </View>
+                  </View>
+              </View>
             </View>
           </View>
         )}
@@ -253,8 +270,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     footerContainer: {
       // flex: 1 / 3,
-      alignItems: 'center',
-      marginTop: 20,
+      // alignItems: 'center',
+      // marginBottom: 20,
     },},
     optionsContainer: {
       // position: 'absolute',
@@ -275,8 +292,8 @@ const styles = StyleSheet.create({
     buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '50%', // Adjust the width as needed
-    marginTop: 20,
+    // width: '50%', // Adjust the width as needed
+    paddingBottom: 100,
     },
     categoryContainer: {
       alignItems: 'center',
@@ -288,5 +305,12 @@ const styles = StyleSheet.create({
       paddingTop: 20,
       paddingBottom: 10,
       paddingLeft: 2,
+    },
+    loaderContainer: {
+      // flex: 1,
+      justifyContent: 'center',
+      paddingTop: 50,
+      // marginBottom: 150, 
+      // alignItems: 'center',
     },
 });
