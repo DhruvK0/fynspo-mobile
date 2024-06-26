@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@react-navigation/material-bottom-tabs": "^5.3.19",
+    "react-native-animated-spinkit": "^1.5.2",
+    "react-native-paper": "^5.12.3",
+    "react-native-vector-icons": "^10.1.0"
+  }
+}
