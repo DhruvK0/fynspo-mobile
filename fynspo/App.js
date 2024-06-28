@@ -15,6 +15,7 @@ import ProfileScreen from './components/Profile';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+// import { CameraUnselected } from './components/Svgs';
 
 const Tab = createBottomTabNavigator();
 const tokenCache = {
@@ -41,7 +42,8 @@ export default function App() {
       tokenCache={tokenCache}
     >
     <GestureHandlerRootView style={styles.container}>
-        {/* <SafeAreaView style={styles.safeArea}> */}
+        {/* <SafeAreaView style={styles.safeArea}> */}  
+          <SignedIn>
           <NavigationContainer>
             {/* <Tab.Navigator screenOptions={{tabBarOptions: {height: 200}, tabBarStyle: { height: 200 }, tabBarActiveBackgroundColor: '#8400ff', tabBarInactiveBackgroundColor: '#8400ff', headerShown: false, headerStyle: { backgroundColor: 'black' }, tabBarStyle: { color: 'black' }}}> */}
             <Tab.Navigator
@@ -80,11 +82,11 @@ export default function App() {
         {/* </SafeAreaView> */}
         <View style={styles.bottomFill}/>
         <StatusBar style="auto" />
-      {/* </SignedIn> */}
-{/* 
+      </SignedIn>
+
       <SignedOut>
         <AuthContainer />
-      </SignedOut> */}
+      </SignedOut>
     </GestureHandlerRootView>
     </ClerkProvider>    
   );  
