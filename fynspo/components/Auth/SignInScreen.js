@@ -33,6 +33,7 @@ export default function SignInScreen() {
           value={emailAddress}
           placeholder="Email..."
           onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
+          style={{backgroundColor: 'white'}}
         />
       </View>
 
@@ -42,10 +43,11 @@ export default function SignInScreen() {
           placeholder="Password..."
           secureTextEntry={true}
           onChangeText={(password) => setPassword(password)}
+          style={{backgroundColor: 'white'}}
         />
       </View>
 
-      <TouchableOpacity onPress={onSignInPress}>
+      <TouchableOpacity onPress={onSignInPress} style={{backgroundColor: 'white'}}>
         <Text>Sign in</Text>
       </TouchableOpacity>
     </View>

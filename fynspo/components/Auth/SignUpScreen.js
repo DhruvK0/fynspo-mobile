@@ -92,7 +92,7 @@ export default function SignUpScreen() {
             />
           </View>
 
-          <TouchableOpacity onPress={onSignUpPress}>
+          <TouchableOpacity onPress={onSignUpPress} style={{backgroundColor: 'white'}}>
             <Text>Sign up</Text>
           </TouchableOpacity>
         </View>
