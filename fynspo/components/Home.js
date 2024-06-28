@@ -249,9 +249,6 @@ export default function Home() {
                     {/* <View style={styles.loaderContainer}>
                                 <ActivityIndicator size="large" color="#8400ff"/>            
                               </View> */}
-                    <View>
-                      {/* <SignOut /> */}
-                    </View>
                   </View>
               </View>
             </View>
