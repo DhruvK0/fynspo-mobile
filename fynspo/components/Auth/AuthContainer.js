@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Alert, Button, Image, Pressable, SafeAreaView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import SignInScreen from './SignInScreen';
 import SignUpScreen from './SignUpScreen';
+import { SignInWithOAuthApple, SignInWithOAuthGoogle } from './SignInWithOAuth';
+
 const logo = require("../../assets/icon.png")
 // const facebook = require("../../assets/facebook.png")
 // const linkedin = require("../../assets/linkedin.png")
@@ -19,6 +21,8 @@ export default function AuthContainer() {
     <SafeAreaView style={styles.container}>
       <SignInScreen />
       <SignUpScreen />
+      <SignInWithOAuthApple />
+      <SignInWithOAuthGoogle />
     </SafeAreaView>
 
     // <SafeAreaView style={styles.container}>
