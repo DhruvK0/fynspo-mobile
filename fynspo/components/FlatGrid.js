@@ -64,50 +64,34 @@ export default function Example() {
 
 
 export function SuperGridExample({ clothing }) {
-
-  const [dim, setdim] = React.useState(200)
-  const [items, setItems] = React.useState([
-    { name: 'TURQUOISE', code: '#1abc9c' },
-    { name: 'EMERALD', code: '#2ecc71' },
-    { name: 'PETER RIVER', code: '#3498db' },
-    { name: 'AMETHYST', code: '#9b59b6' },
-    { name: 'WET ASPHALT', code: '#34495e' },
-    { name: 'GREEN SEA', code: '#16a085' },
-    { name: 'NEPHRITIS', code: '#27ae60' },
-    { name: 'BELIZE HOLE', code: '#2980b9' },
-    { name: 'WISTERIA', code: '#8e44ad' },
-    { name: 'MIDNIGHT BLUE', code: '#2c3e50' },
-    { name: 'SUN FLOWER', code: '#f1c40f' },
-    { name: 'CARROT', code: '#e67e22' },  
-    { name: 'ALIZARIN', code: '#e74c3c' },
-    { name: 'CLOUDS', code: '#ecf0f1' },
-    { name: 'CONCRETE', code: '#95a5a6' },
-    { name: 'ORANGE', code: '#f39c12' },
-    { name: 'PUMPKIN', code: '#d35400' },
-    { name: 'POMEGRANATE', code: '#c0392b' },
-    { name: 'SILVER', code: '#bdc3c7' },
-    { name: 'ASBESTOS', code: '#7f8c8d' },
-  ]);
-
-//   setTimeout(() => setdim(dim * 1.1), 3000);
-
   return (
     <SimpleGrid
       itemDimension={150}
       data={clothing}
-    //   style={styles.gridView}
-    //   staticDimension={dim}
-    //   fixed
-    //   horizontal
       spacing={10}
       renderItem={({ item }) => (
-        
-            
-        <View style={[styles.itemContainer, { backgroundColor: '#fff' }]}>
+        <View style={[styles.itemContainerMain, { backgroundColor: '#fff' }]}>
             <Pressable onPress={() => WebBrowser.openBrowserAsync(item.product_link)}>
             <Image source={{uri: item.image}} style={{width: 150, height: 200, resizeMode: 'contain',}}/>
             <Text style={styles.itemName}>{item.name}</Text>
             <Text style={styles.itemCode}>${item.price}</Text>
+            </Pressable>
+        </View>
+      )}
+    />
+  );
+}
+
+export function FeedGrid({ clothing }) {
+  return (
+    <SimpleGrid
+      itemDimension={150}
+      data={clothing}
+      spacing={10}
+      renderItem={({ item }) => (     
+        <View style={styles.itemContainer}>
+            <Pressable onPress={() => WebBrowser.openBrowserAsync(item.product_link)}>
+              <Image source={{uri: item.image}} style={styles.image}/>
             </Pressable>
         </View>
       )}
@@ -120,7 +104,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex: 1,
   },
-  itemContainer: {
+  itemContainerMain: {
     justifyContent: 'flex-end',
     borderRadius: 5,
     padding: 10,
@@ -128,6 +112,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+  },
+  itemContainer: {
+    borderRadius: 5,
+    overflow: 'hidden', // This will clip the image to the container's bounds
+    aspectRatio: 3/4, // Adjust this ratio as needed (e.g., 1 for square, 4/3 for landscape)
+  },
+  pressable: {
+    width: '100%',
+    height: '100%',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover', // This will make the image cover the entire container
   },
   itemName: {
     fontSize: 16,
