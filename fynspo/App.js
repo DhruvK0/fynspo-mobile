@@ -16,7 +16,11 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 // import { CameraUnselected } from './components/Svgs';
+import { PortalProvider } from '@gorhom/portal';
+
 import Feed from './components/Feed';
+import ProductItem from './components/ProductItem';
+import { Portal } from 'react-native-paper';
 
 const Tab = createBottomTabNavigator();
 const tokenCache = {
@@ -43,6 +47,7 @@ export default function App() {
       tokenCache={tokenCache}
     >
     <GestureHandlerRootView style={styles.container}>
+       <PortalProvider>
         {/* <SafeAreaView style={styles.safeArea}> */}  
           <SignedIn>
           <NavigationContainer>
@@ -88,6 +93,7 @@ export default function App() {
       <SignedOut>
         <AuthContainer />
       </SignedOut>
+      </PortalProvider>
     </GestureHandlerRootView>
     </ClerkProvider>    
   );  
