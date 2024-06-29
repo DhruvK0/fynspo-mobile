@@ -4,6 +4,7 @@ import { FlatGrid, SectionGrid, SimpleGrid } from 'react-native-super-grid';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import OutfitItem from './OutfitItem';
+import ProductItem from './ProductItem';
 
 export default function Example() {
   const [items, setItems] = React.useState([
@@ -96,6 +97,25 @@ export function FeedGrid({ clothing }) {
       renderItem={({ item }) => (     
         <View style={styles.itemContainer}>
             <OutfitItem item={item} onBuy={handleBuy} />
+        </View>
+      )}
+    />
+  );
+}
+
+export function HomeGrid({ clothing }) {
+  const handleBuy = (item) => {
+    // Implement your buy logic here
+    console.log('Buying item:', item);
+  };
+  return (
+    <SimpleGrid
+      itemDimension={150}
+      data={clothing}
+      spacing={10}
+      renderItem={({ item }) => (     
+        <View style={styles.itemContainer}>
+            <ProductItem item={item} onBuy={handleBuy} />
         </View>
       )}
     />

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Image, Pressable, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, PanResponder } from 'react-native';
+import { View, Image, Pressable, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, PanResponder, Linking, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Portal } from '@gorhom/portal'; // You'll need to install this package
+import { Portal } from '@gorhom/portal';
+import { SimpleGrid } from 'react-native-super-grid'; // Make sure this is imported
+import * as WebBrowser from 'expo-web-browser';
 
 const { width, height } = Dimensions.get('window');
 
-const ProductItem = ({ item, onBuy }) => {
+const ProductItem = ({ item, onBuy, depth = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(width)).current;
 
@@ -53,6 +55,19 @@ const ProductItem = ({ item, onBuy }) => {
     }
   }, [isOpen]);
 
+  const handleBuyNow = () => {
+    Linking.openURL(item.product_link);
+  };
+
+  // Dummy data for similar items
+  const similarItems = Array(6).fill({}).map((_, index) => ({
+    id: `similar-${depth}-${index}`,
+    name: `Similar Item ${index + 1}`,
+    price: (Math.random() * 100).toFixed(2),
+    image: 'https://via.placeholder.com/150',
+    product_link: 'https://example.com',
+  }));
+
   return (
     <>
       <Pressable onPress={openSubpage} style={styles.pressable}>
@@ -73,20 +88,34 @@ const ProductItem = ({ item, onBuy }) => {
                 style={styles.backButton} 
                 onPress={closeSubpage}
               >
-                <Ionicons name="arrow-back" size={24} color="black" />
+                <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
 
-              <Image source={{uri: item.image}} style={styles.modalImage} />
-              <Text style={styles.priceText}>${item.price}</Text>
-              <TouchableOpacity 
-                style={styles.buyButton} 
-                onPress={() => {
-                  onBuy(item);
-                  closeSubpage();
-                }}
-              >
-                <Text style={styles.buyButtonText}>Buy Now</Text>
-              </TouchableOpacity>
+              <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                <Image source={{uri: item.image}} style={styles.modalImage} />
+                <Text style={styles.productName}>{item.name}</Text>
+                <Text style={styles.priceText}>${item.price}</Text>
+                <TouchableOpacity 
+                  style={styles.buyButton} 
+                  onPress={() => WebBrowser.openBrowserAsync(item.product_link)}
+                >
+                  <Text style={styles.buyButtonText}>Buy Now</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.similarItemsTitle}>Similar Styled Items</Text>
+                <SimpleGrid
+                  itemDimension={100}
+                  data={similarItems}
+                  spacing={10}
+                  renderItem={({item: similarItem}) => (
+                    <ProductItem 
+                      item={similarItem} 
+                      onBuy={onBuy} 
+                      depth={depth + 1}
+                    />
+                  )}
+                />
+              </ScrollView>
             </Animated.View>
           </View>
         </Portal>
@@ -119,35 +148,61 @@ const styles = StyleSheet.create({
     right: 0,
     width: width,
     height: height,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
+  },
+  scrollContent: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   modalImage: {
-    width: '80%',
-    height: '60%',
+    width: width * 0.8,
+    height: height * 0.4,
     resizeMode: 'contain',
+    borderRadius: 10,
   },
-  priceText: {
+  productName: {
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 20,
+    textAlign: 'center',
+    color: 'white',
+  },
+  priceText: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 10,
+    color: 'white',
   },
   buyButton: {
-    backgroundColor: '#2ecc71',
-    padding: 10,
+    backgroundColor: '#8400ff',
+    padding: 15,
     borderRadius: 5,
     marginTop: 20,
+    width: width * 0.8,
   },
   buyButtonText: {
     color: 'white',
     fontSize: 18,
+    textAlign: 'center',
   },
   backButton: {
     position: 'absolute',
     top: 40,
     left: 20,
     zIndex: 1,
+  },
+  similarItemsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 30,
+    marginBottom: 10,
+    color: 'white',
+  },
+  similarItemContainer: {
+    backgroundColor: 'white',
+    borderRadius: 5,
+    height: 150,
   },
 });
 

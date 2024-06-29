@@ -21,7 +21,7 @@ import * as SecureStore from "expo-secure-store";
 import AuthContainer from './Auth/AuthContainer';
 import { makeApiCall } from './GetRequests';
 import CategoryButton from './Buttons/CategoryButton';
-import Example, {SuperGridExample, FeedGrid } from './FlatGrid';
+import Example, {SuperGridExample, FeedGrid, HomeGrid } from './FlatGrid';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 
@@ -222,7 +222,7 @@ export default function Home() {
                     </ScrollView>
 
                     <View style={styles.gridContainer}>
-                      <FeedGrid clothing={clothing[category]} />
+                      <HomeGrid clothing={clothing[category]} />
                     </View>
                   </ScrollView>
                   
