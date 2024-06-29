@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
 import { FlatGrid, SectionGrid, SimpleGrid } from 'react-native-super-grid';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import OutfitItem from './OutfitItem';
 
 export default function Example() {
   const [items, setItems] = React.useState([
@@ -83,6 +84,10 @@ export function SuperGridExample({ clothing }) {
 }
 
 export function FeedGrid({ clothing }) {
+  const handleBuy = (item) => {
+    // Implement your buy logic here
+    console.log('Buying item:', item);
+  };
   return (
     <SimpleGrid
       itemDimension={150}
@@ -90,9 +95,7 @@ export function FeedGrid({ clothing }) {
       spacing={10}
       renderItem={({ item }) => (     
         <View style={styles.itemContainer}>
-            <Pressable onPress={() => WebBrowser.openBrowserAsync(item.product_link)}>
-              <Image source={{uri: item.image}} style={styles.image}/>
-            </Pressable>
+            <OutfitItem item={item} onBuy={handleBuy} />
         </View>
       )}
     />
