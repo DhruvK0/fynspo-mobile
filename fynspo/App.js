@@ -16,6 +16,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 // import { CameraUnselected } from './components/Svgs';
+import Feed from './components/Feed';
 
 const Tab = createBottomTabNavigator();
 const tokenCache = {
@@ -74,7 +75,7 @@ export default function App() {
               })}
 
             > 
-              <Tab.Screen name="Feed" component={Example} />
+              <Tab.Screen name="Feed" component={Feed} />
               <Tab.Screen name="Home" component={Home} />
               <Tab.Screen name="Profile" component={ProfileScreen} />
             </Tab.Navigator>
