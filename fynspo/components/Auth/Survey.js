@@ -1,24 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import { CheckBox } from 'react-native-elements';
-
-
-//create a mapping for the fashion types as M F and B
 
 const fashion_types = { 
   "Men's Fashion": 'M',
   "Women's Fashion": 'F',
   "Both": 'B'
-}
+};
 
-export function SurveyScreen({ onComplete }) {
+export function SurveyScreen({ onComplete, isEditing = false }) {
   const { user } = useUser();
   const [step, setStep] = useState(1);
   const [fashionPreference, setFashionPreference] = useState('');
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [fashionTrends, setFashionTrends] = useState([]);
+
+  useEffect(() => {
+    if (isEditing && user.unsafeMetadata) {
+      setFashionPreference(user.unsafeMetadata.fashionPreference || '');
+      setPriceRange(user.unsafeMetadata.priceRange || [0, 1000]);
+      setFashionTrends(user.unsafeMetadata.fashionTrends || []);
+    }
+  }, [isEditing, user.unsafeMetadata]);
 
   const handleSurveyComplete = async () => {
     try {
@@ -53,7 +57,7 @@ export function SurveyScreen({ onComplete }) {
             {["Men's Fashion", "Women's Fashion", "Both"].map((option) => (
               <TouchableOpacity
                 key={option}
-                style={[styles.button, fashionPreference === option && styles.selectedButton]}
+                style={[styles.button, fashionPreference === fashion_types[option] && styles.selectedButton]}
                 onPress={() => setFashionPreference(fashion_types[option])}
               >
                 <Text style={styles.buttonText}>{option}</Text>
@@ -61,6 +65,11 @@ export function SurveyScreen({ onComplete }) {
             ))}
             <View style={styles.separator} />
             <View style={styles.navigationButtons}>
+              {isEditing && (
+                <TouchableOpacity style={styles.cancelButton} onPress={onComplete}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity style={styles.nextButton} onPress={() => setStep(2)}>
                 <Text style={styles.buttonText}>Next</Text>
               </TouchableOpacity>
@@ -121,6 +130,7 @@ export function SurveyScreen({ onComplete }) {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>{isEditing ? 'Edit Preferences' : 'Survey'}</Text>
       {renderStep()}
     </View>
   );
@@ -132,6 +142,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'black',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 20,
   },
   card: {
     backgroundColor: 'black',
@@ -179,6 +195,15 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#8400ff',
+    padding: 15,
+    borderRadius: 25,
+    marginTop: 20,
+    flex: 1,
+    marginRight: 5,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'grey',
     padding: 15,
     borderRadius: 25,
     marginTop: 20,
