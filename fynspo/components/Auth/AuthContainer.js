@@ -1,168 +1,117 @@
-import React, { useState } from 'react'
-import { Alert, Button, Image, Pressable, SafeAreaView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
-import SignInScreen from './SignInScreen';
-import SignUpScreen from './SignUpScreen';
-import { SignInWithOAuthApple, SignInWithOAuthGoogle } from './SignInWithOAuth';
+import React, { useState, useEffect } from 'react'
+import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native'
+import { useUser } from '@clerk/clerk-expo'
+import SignInScreen from './SignInScreen'
+import SignUpScreen from './SignUpScreen'
+import { SignInWithOAuthApple, SignInWithOAuthGoogle } from './SignInWithOAuth'
+import SurveyComponent from './Survey'
 
-const logo = require("../../assets/icon.png")
-// const facebook = require("../../assets/facebook.png")
-// const linkedin = require("../../assets/linkedin.png")
-// const tiktok = require("../../assets/tiktok.png")
-
-// contact me :)
-// instagram: must_ait6
-// email : mustapha.aitigunaoun@gmail.com
 
 export default function AuthContainer() {
-    const [click,setClick] = useState(false);
-    const {username,setUsername}=  useState("");
-    const {password,setPassword}=  useState("");
+  const { isSignedIn, user } = useUser();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
+
+  useEffect(() => {
+    if (isSignedIn && user) {
+      setSurveyCompleted(user.publicMetadata.surveyCompleted);
+    }
+  }, [isSignedIn, user]);
+
+  if (!isSignedIn) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.card}>
+          {isSignUp ? <Text style={styles.title}>Sign Up</Text> : <Text style={styles.title}>Sign In</Text>}
+          <SignInWithOAuthGoogle signup={isSignUp} />
+          <SignInWithOAuthApple signup={isSignUp} />
+          <View style={styles.divider}>
+            <View style={styles.line} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.line} />
+          </View>
+          {isSignUp ? (
+            <SignUpScreen
+              onAccountExists={() => {
+                Alert.alert("Account already exists", "Please sign in instead.");
+                setIsSignUp(false);
+              }}
+            />
+          ) : (
+            <SignInScreen />
+          )}
+          <View style={styles.authToggle}>
+            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+              <Text style={styles.toggleText}>
+                {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isSignedIn && !surveyCompleted) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <SurveyComponent onComplete={() => setSurveyCompleted(true)} />
+      </SafeAreaView>
+    );
+  }
+
+  // If signed in and survey completed, render main content
   return (
     <SafeAreaView style={styles.container}>
-      <SignInScreen />
-      <SignUpScreen />
-      <SignInWithOAuthApple />
-      <SignInWithOAuthGoogle />
+      <Text>Welcome! You're signed in and have completed the survey.</Text>
     </SafeAreaView>
-
-    // <SafeAreaView style={styles.container}>
-        
-    //     <Image source={logo} style={styles.image} resizeMode='contain' />
-    //     <Text style={styles.title}>Login</Text>
-    //     <View style={styles.inputView}>
-    //         <TextInput style={styles.input} placeholder='EMAIL OR USERNAME' value={username} onChangeText={setUsername} autoCorrect={false}
-    //     autoCapitalize='none' />
-    //         <TextInput style={styles.input} placeholder='PASSWORD' secureTextEntry value={password} onChangeText={setPassword} autoCorrect={false}
-    //     autoCapitalize='none'/>
-    //     </View>
-    //     <View style={styles.rememberView}>
-    //         <View style={styles.switch}>
-    //             <Switch  value={click} onValueChange={setClick} trackColor={{true : "green" , false : "gray"}} />
-    //             <Text style={styles.rememberText}>Remember Me</Text>
-    //         </View>
-    //         <View>
-    //             <Pressable onPress={() => Alert.alert("Forget Password!")}>
-    //                 <Text style={styles.forgetText}>Forgot Password?</Text>
-    //             </Pressable>
-    //         </View>
-    //     </View>
-
-    //     <View style={styles.buttonView}>
-    //         <Pressable style={styles.button} onPress={() => Alert.alert("Login Successfuly!","see you in my instagram if you have questions : must_ait6")}>
-    //             <Text style={styles.buttonText}>LOGIN</Text>
-    //         </Pressable>
-    //         <Text style={styles.optionsText}>OR LOGIN WITH</Text>
-    //     </View>
-        
-    //     {/* <View style={styles.mediaIcons}>
-    //             <Image source={facebook} style={styles.icons}   />
-    //             <Image source={tiktok} style={styles.icons}  />
-    //             <Image source={linkedin} style={styles.icons}  />
-    //     </View> */}
-
-    //     <Text style={styles.footerText}>Don't Have Account?<Text style={styles.signup}>  Sign Up</Text></Text>
-
-        
-    // </SafeAreaView>
-
-  )
+  );
 }
 
-
 const styles = StyleSheet.create({
-  container : {
-    alignItems : "center",
-    paddingTop: 70,
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
   },
-  image : {
-    height : 160,
-    width : 170
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  title : {
-    fontSize : 30,
-    fontWeight : "bold",
-    textTransform : "uppercase",
-    textAlign: "center",
-    paddingVertical : 40,
-    color : "red"
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  inputView : {
-    gap : 15,
-    width : "100%",
-    paddingHorizontal : 40,
-    marginBottom  :5
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
   },
-  input : {
-    height : 50,
-    paddingHorizontal : 20,
-    borderColor : "red",
-    borderWidth : 1,
-    borderRadius: 7
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'black',
   },
-  rememberView : {
-    width : "100%",
-    paddingHorizontal : 50,
-    justifyContent: "space-between",
-    alignItems : "center",
-    flexDirection : "row",
-    marginBottom : 8
+  dividerText: {
+    marginHorizontal: 10,
+    color: 'black',
   },
-  switch :{
-    flexDirection : "row",
-    gap : 1,
-    justifyContent : "center",
-    alignItems : "center"
-    
+  authToggle: {
+    marginTop: 20,
   },
-  rememberText : {
-    fontSize: 13
+  toggleText: {
+    color: 'black',
+    textAlign: 'center',
   },
-  forgetText : {
-    fontSize : 11,
-    color : "red"
-  },
-  button : {
-    backgroundColor : "red",
-    height : 45,
-    borderColor : "gray",
-    borderWidth  : 1,
-    borderRadius : 5,
-    alignItems : "center",
-    justifyContent : "center"
-  },
-  buttonText : {
-    color : "white"  ,
-    fontSize: 18,
-    fontWeight : "bold"
-  }, 
-  buttonView :{
-    width :"100%",
-    paddingHorizontal : 50
-  },
-  optionsText : {
-    textAlign : "center",
-    paddingVertical : 10,
-    color : "gray",
-    fontSize : 13,
-    marginBottom : 6
-  },
-  mediaIcons : {
-    flexDirection : "row",
-    gap : 15,
-    alignItems: "center",
-    justifyContent : "center",
-    marginBottom : 23
-  },
-  icons : {
-    width : 40,
-    height: 40,
-  },
-  footerText : {
-    textAlign: "center",
-    color : "gray",
-  },
-  signup : {
-    color : "red",
-    fontSize : 13
-  }
-})
+});
