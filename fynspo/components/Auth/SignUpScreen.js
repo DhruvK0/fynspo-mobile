@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, StyleSheet, Linking, Alert } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
+import Checkbox from 'expo-checkbox';
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -11,9 +12,15 @@ export default function SignUpScreen() {
   const [password, setPassword] = React.useState("");
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
+  const [isChecked, setChecked] = React.useState(false);
 
   const onSignUpPress = async () => {
     if (!isLoaded) {
+      return;
+    }
+
+    if (!isChecked) {
+      Alert.alert("Error", "Please accept the Terms of Service to sign up.");
       return;
     }
 
@@ -92,7 +99,27 @@ export default function SignUpScreen() {
               onChangeText={(password) => setPassword(password)}
             />
           </View>
-          <TouchableOpacity onPress={onSignUpPress} style={styles.button}>
+          <View style={styles.termsContainer}>
+            <Checkbox
+              value={isChecked}
+              onValueChange={setChecked}
+              color={isChecked ? '#8A2BE2' : undefined}
+              style={styles.checkbox}
+            />
+            <Text style={styles.termsText}>
+              I agree to the {' '}
+              <Text
+                style={styles.link}
+                onPress={() => Linking.openURL('https://fynspo.com/tos')}
+              >
+                Terms of Service
+              </Text> and {' '} <Text
+                style={styles.link}
+                onPress={() => Linking.openURL('https://fynspo.com/eula')}
+              >End User License Agreement</Text>
+            </Text>
+          </View>
+          <TouchableOpacity onPress={onSignUpPress} style={[styles.button, !isChecked && styles.buttonDisabled]}>
             <Text style={styles.buttonText}>Sign up</Text>
           </TouchableOpacity>
         </View>
@@ -118,7 +145,7 @@ export default function SignUpScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#8A2BE2', // Purple background
+    backgroundColor: '#8A2BE2',
     borderRadius: 10,
     padding: 15,
   },
@@ -130,18 +157,43 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     padding: 15,
     fontSize: 16,
-    color: 'black', // Ensure text input color is black
+    color: 'black',
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    marginTop: 15,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  termsText: {
+    marginLeft: 8,
+    color: 'black',
+    fontSize: 16,
+  },
+  link: {
+    color: '#8A2BE2',
+    textDecorationLine: 'underline',
   },
   button: {
-    backgroundColor: '#8A2BE2', // Purple background
+    backgroundColor: '#8A2BE2',
     borderRadius: 25,
     padding: 15,
     alignItems: 'center',
     marginTop: 10,
   },
+  buttonDisabled: {
+    backgroundColor: '#D8BFD8',
+  },
   buttonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
   },
 });
