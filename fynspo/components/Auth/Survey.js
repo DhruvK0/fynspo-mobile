@@ -4,6 +4,15 @@ import { useUser } from '@clerk/clerk-expo';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import { CheckBox } from 'react-native-elements';
 
+
+//create a mapping for the fashion types as M F and B
+
+const fashion_types = { 
+  "Men's Fashion": 'M',
+  "Women's Fashion": 'F',
+  "Both": 'B'
+}
+
 export function SurveyScreen({ onComplete }) {
   const { user } = useUser();
   const [step, setStep] = useState(1);
@@ -41,11 +50,11 @@ export function SurveyScreen({ onComplete }) {
         return (
           <View style={styles.card}>
             <Text style={styles.question}>Select Your Fashion Preference:</Text>
-            {['Men\'s Fashion', 'Women\'s Fashion', 'Both'].map((option) => (
+            {["Men's Fashion", "Women's Fashion", "Both"].map((option) => (
               <TouchableOpacity
                 key={option}
                 style={[styles.button, fashionPreference === option && styles.selectedButton]}
-                onPress={() => setFashionPreference(option)}
+                onPress={() => setFashionPreference(fashion_types[option])}
               >
                 <Text style={styles.buttonText}>{option}</Text>
               </TouchableOpacity>
