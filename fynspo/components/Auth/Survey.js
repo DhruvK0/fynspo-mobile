@@ -27,12 +27,20 @@ export function SurveyScreen({ onComplete }) {
     }
   };
 
+  const toggleTrend = (trend) => {
+    if (fashionTrends.includes(trend)) {
+      setFashionTrends(fashionTrends.filter(t => t !== trend));
+    } else {
+      setFashionTrends([...fashionTrends, trend]);
+    }
+  };
+
   const renderStep = () => {
     switch(step) {
       case 1:
         return (
           <View style={styles.card}>
-            <Text style={styles.question}>Select your fashion preference:</Text>
+            <Text style={styles.question}>Select Your Fashion Preference:</Text>
             {['Men\'s Fashion', 'Women\'s Fashion', 'Both'].map((option) => (
               <TouchableOpacity
                 key={option}
@@ -42,15 +50,18 @@ export function SurveyScreen({ onComplete }) {
                 <Text style={styles.buttonText}>{option}</Text>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity style={styles.nextButton} onPress={() => setStep(2)}>
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
+            <View style={styles.separator} />
+            <View style={styles.navigationButtons}>
+              <TouchableOpacity style={styles.nextButton} onPress={() => setStep(2)}>
+                <Text style={styles.buttonText}>Next</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         );
       case 2:
         return (
           <View style={styles.card}>
-            <Text style={styles.question}>Select your price range:</Text>
+            <Text style={styles.question}>Select Your Price Range:</Text>
             <MultiSlider
               values={priceRange}
               sliderLength={280}
@@ -60,35 +71,40 @@ export function SurveyScreen({ onComplete }) {
               step={10}
             />
             <Text style={styles.priceText}>${priceRange[0]} - ${priceRange[1]}</Text>
-            <TouchableOpacity style={styles.nextButton} onPress={() => setStep(3)}>
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
+            <View style={styles.separator} />
+            <View style={styles.navigationButtons}>
+              <TouchableOpacity style={styles.backButton} onPress={() => setStep(1)}>
+                <Text style={styles.buttonText}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.nextButton} onPress={() => setStep(3)}>
+                <Text style={styles.buttonText}>Next</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         );
       case 3:
         const trends = ['Casual', 'Formal', 'Streetwear', 'Vintage', 'Athleisure'];
         return (
           <View style={styles.card}>
-            <Text style={styles.question}>Select your fashion trends:</Text>
+            <Text style={styles.question}>Select Your Fashion Trends:</Text>
             {trends.map((trend) => (
-              <CheckBox
+              <TouchableOpacity
                 key={trend}
-                title={trend}
-                checked={fashionTrends.includes(trend)}
-                onPress={() => {
-                  if (fashionTrends.includes(trend)) {
-                    setFashionTrends(fashionTrends.filter(t => t !== trend));
-                  } else {
-                    setFashionTrends([...fashionTrends, trend]);
-                  }
-                }}
-                containerStyle={styles.checkboxContainer}
-                textStyle={styles.checkboxText}
-              />
+                style={[styles.button, fashionTrends.includes(trend) && styles.selectedButton]}
+                onPress={() => toggleTrend(trend)}
+              >
+                <Text style={styles.buttonText}>{trend}</Text>
+              </TouchableOpacity>
             ))}
-            <TouchableOpacity style={styles.submitButton} onPress={handleSurveyComplete}>
-              <Text style={styles.buttonText}>Complete Survey</Text>
-            </TouchableOpacity>
+            <View style={styles.separator} />
+            <View style={styles.navigationButtons}>
+              <TouchableOpacity style={styles.backButton} onPress={() => setStep(2)}>
+                <Text style={styles.buttonText}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.submitButton} onPress={handleSurveyComplete}>
+                <Text style={styles.buttonText}>Complete</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         );
     }
@@ -109,20 +125,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: 'black',
     borderRadius: 20,
     padding: 20,
     width: '90%',
     alignItems: 'center',
   },
   question: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: 'white',
   },
   button: {
-    backgroundColor: '#8400ff',
+    backgroundColor: 'white',
     padding: 15,
     borderRadius: 25,
     marginVertical: 10,
@@ -130,19 +147,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedButton: {
-    backgroundColor: '#6200ea',
+    backgroundColor: '#8400ff',
   },
   buttonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  navigationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
   },
   nextButton: {
     backgroundColor: '#8400ff',
     padding: 15,
     borderRadius: 25,
     marginTop: 20,
-    width: '80%',
+    flex: 1,
+    marginLeft: 5,
+    alignItems: 'center',
+  },
+  backButton: {
+    backgroundColor: '#8400ff',
+    padding: 15,
+    borderRadius: 25,
+    marginTop: 20,
+    flex: 1,
+    marginRight: 5,
     alignItems: 'center',
   },
   submitButton: {
@@ -150,19 +182,19 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 25,
     marginTop: 20,
-    width: '80%',
+    flex: 1,
+    marginLeft: 5,
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 16,
+    fontSize: 40,
     marginTop: 10,
+    color: 'white',
   },
-  checkboxContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
+  separator: {
+    height: 1,
+    backgroundColor: 'white',
     width: '80%',
-  },
-  checkboxText: {
-    fontSize: 16,
+    marginVertical: 20,
   },
 });
