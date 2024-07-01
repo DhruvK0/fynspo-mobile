@@ -112,7 +112,7 @@ export default function ProfileScreen() {
         />
         <Button
           title="Terms"
-          onPress={() => openLink('https://fynspo.com/terms')}
+          onPress={() => openLink('https://fynspo.com/tos')}
           buttonStyle={styles.legalButton}
           titleStyle={styles.legalButtonText}
         />
