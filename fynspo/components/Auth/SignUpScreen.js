@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
 
 export default function SignUpScreen() {
@@ -12,7 +12,6 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
 
-  // start the sign up process.
   const onSignUpPress = async () => {
     if (!isLoaded) {
       return;
@@ -26,17 +25,13 @@ export default function SignUpScreen() {
         password,
       });
 
-      // send the email.
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // change the UI to our pending section.
       setPendingVerification(true);
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
     }
   };
 
-  // This verifies the user using email code that is delivered.
   const onPressVerify = async () => {
     if (!isLoaded) {
       return;
@@ -55,62 +50,98 @@ export default function SignUpScreen() {
 
   return (
     <View>
-      {!pendingVerification && (
+      {!pendingVerification ? (
         <View>
-        <View>
+          <View style={styles.inputContainer}>
             <TextInput
+              style={styles.input}
               autoCapitalize="none"
               value={firstName}
               placeholder="First Name..."
+              placeholderTextColor="black"
               onChangeText={(firstName) => setFirstName(firstName)}
             />
           </View>
-          <View>
+          <View style={styles.inputContainer}>
             <TextInput
+              style={styles.input}
               autoCapitalize="none"
               value={lastName}
               placeholder="Last Name..."
+              placeholderTextColor="black"
               onChangeText={(lastName) => setLastName(lastName)}
             />
           </View>
-          <View>
+          <View style={styles.inputContainer}>
             <TextInput
+              style={styles.input}
               autoCapitalize="none"
               value={emailAddress}
               placeholder="Email..."
+              placeholderTextColor="black"
               onChangeText={(email) => setEmailAddress(email)}
             />
           </View>
-
-          <View>
+          <View style={styles.inputContainer}>
             <TextInput
+              style={styles.input}
               value={password}
               placeholder="Password..."
-              placeholderTextColor="#000"
+              placeholderTextColor="black"
               secureTextEntry={true}
               onChangeText={(password) => setPassword(password)}
             />
           </View>
-
-          <TouchableOpacity onPress={onSignUpPress} style={{backgroundColor: 'white'}}>
-            <Text>Sign up</Text>
+          <TouchableOpacity onPress={onSignUpPress} style={styles.button}>
+            <Text style={styles.buttonText}>Sign up</Text>
           </TouchableOpacity>
         </View>
-      )}
-      {pendingVerification && (
+      ) : (
         <View>
-          <View>
+          <View style={styles.inputContainer}>
             <TextInput
+              style={styles.input}
               value={code}
-              placeholder="Code..."
+              placeholder="Verification Code..."
+              placeholderTextColor="black"
               onChangeText={(code) => setCode(code)}
             />
           </View>
-          <TouchableOpacity onPress={onPressVerify}>
-            <Text>Verify Email</Text>
+          <TouchableOpacity onPress={onPressVerify} style={styles.button}>
+            <Text style={styles.buttonText}>Verify Email</Text>
           </TouchableOpacity>
         </View>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#8A2BE2', // Purple background
+    borderRadius: 10,
+    padding: 15,
+  },
+  inputContainer: {
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#e6e6e6',
+    borderRadius: 25,
+    padding: 15,
+    fontSize: 16,
+    color: 'black', // Ensure text input color is black
+  },
+  button: {
+    backgroundColor: '#8A2BE2', // Purple background
+    borderRadius: 25,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
