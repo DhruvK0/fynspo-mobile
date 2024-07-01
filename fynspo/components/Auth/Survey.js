@@ -1,112 +1,25 @@
-import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Button, Dimensions } from 'react-native'
-import { useUser } from '@clerk/clerk-expo'
-import Slider from '@react-native-community/slider'
-
-const SurveyComponent = ({ onComplete }) => {
-  const { user } = useUser()
-  const [step, setStep] = useState(1)
-  const [fashion, setFashion] = useState('')
-  const [trends, setTrends] = useState([])
-  const [priceRange, setPriceRange] = useState([0, 1000])
-
-  const saveSurveyData = async () => {
-    try {
-      await user.update({
-        publicMetadata: {
-          surveyCompleted: true,
-          fashion,
-          trends,
-          priceRange,
-        },
-      })
-      onComplete()
-    } catch (err) {
-      console.error('Failed to save survey data:', err)
-    }
-  }
-
-  if (step === 1) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.question}>Select your fashion preference:</Text>
-        <TouchableOpacity style={styles.button} onPress={() => { setFashion('mens'); setStep(2) }}>
-          <Text style={styles.buttonText}>Men's Fashion</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => { setFashion('womens'); setStep(2) }}>
-          <Text style={styles.buttonText}>Women's Fashion</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => { setFashion('both'); setStep(2) }}>
-          <Text style={styles.buttonText}>Both</Text>
-        </TouchableOpacity>
-      </View>
-    )
-  }
-
-  if (step === 2) {
-    const trendOptions = ['Casual', 'Formal', 'Streetwear', 'Vintage', 'Athletic']
-    return (
-      <View style={styles.container}>
-        <Text style={styles.question}>Select fashion trends:</Text>
-        {trendOptions.map((trend) => (
-          <TouchableOpacity
-            key={trend}
-            style={[styles.button, trends.includes(trend) && styles.selectedButton]}
-            onPress={() => {
-              if (trends.includes(trend)) {
-                setTrends(trends.filter(t => t !== trend))
-              } else {
-                setTrends([...trends, trend])
-              }
-            }}
-          >
-            <Text style={styles.buttonText}>{trend}</Text>
-          </TouchableOpacity>
-        ))}
-        <TouchableOpacity style={styles.nextButton} onPress={() => setStep(3)}>
-          <Text style={styles.buttonText}>Next</Text>
-        </TouchableOpacity>
-      </View>
-    )
-  }
-
-  if (step === 3) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.question}>Select price range:</Text>
-        <Text>Min: ${priceRange[0]}</Text>
-        <Slider
-          style={styles.slider}
-          value={priceRange[0]}
-          onValueChange={(value) => setPriceRange([value, priceRange[1]])}
-          minimumValue={0}
-          maximumValue={1000}
-          step={1}
-        />
-        <Text>Max: ${priceRange[1]}</Text>
-        <Slider
-          style={styles.slider}
-          value={priceRange[1]}
-          onValueChange={(value) => setPriceRange([priceRange[0], value])}
-          minimumValue={0}
-          maximumValue={1000}
-          step={1}
-        />
-        <TouchableOpacity style={styles.submitButton} onPress={saveSurveyData}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    )
-  }
-}
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { useUser } from '@clerk/clerk-expo';
+import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import { CheckBox } from 'react-native-elements';
 
 export function SurveyScreen({ onComplete }) {
   const { user } = useUser();
+  const [step, setStep] = useState(1);
+  const [fashionPreference, setFashionPreference] = useState('');
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [fashionTrends, setFashionTrends] = useState([]);
 
   const handleSurveyComplete = async () => {
     try {
       await user.update({
-        unsafeMetadata: { surveyCompleted: true },
+        unsafeMetadata: { 
+          surveyCompleted: true,
+          fashionPreference,
+          priceRange,
+          fashionTrends
+        },
       });
       onComplete();
     } catch (error) {
@@ -114,97 +27,142 @@ export function SurveyScreen({ onComplete }) {
     }
   };
 
+  const renderStep = () => {
+    switch(step) {
+      case 1:
+        return (
+          <View style={styles.card}>
+            <Text style={styles.question}>Select your fashion preference:</Text>
+            {['Men\'s Fashion', 'Women\'s Fashion', 'Both'].map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[styles.button, fashionPreference === option && styles.selectedButton]}
+                onPress={() => setFashionPreference(option)}
+              >
+                <Text style={styles.buttonText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.nextButton} onPress={() => setStep(2)}>
+              <Text style={styles.buttonText}>Next</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      case 2:
+        return (
+          <View style={styles.card}>
+            <Text style={styles.question}>Select your price range:</Text>
+            <MultiSlider
+              values={priceRange}
+              sliderLength={280}
+              onValuesChange={setPriceRange}
+              min={0}
+              max={1000}
+              step={10}
+            />
+            <Text style={styles.priceText}>${priceRange[0]} - ${priceRange[1]}</Text>
+            <TouchableOpacity style={styles.nextButton} onPress={() => setStep(3)}>
+              <Text style={styles.buttonText}>Next</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      case 3:
+        const trends = ['Casual', 'Formal', 'Streetwear', 'Vintage', 'Athleisure'];
+        return (
+          <View style={styles.card}>
+            <Text style={styles.question}>Select your fashion trends:</Text>
+            {trends.map((trend) => (
+              <CheckBox
+                key={trend}
+                title={trend}
+                checked={fashionTrends.includes(trend)}
+                onPress={() => {
+                  if (fashionTrends.includes(trend)) {
+                    setFashionTrends(fashionTrends.filter(t => t !== trend));
+                  } else {
+                    setFashionTrends([...fashionTrends, trend]);
+                  }
+                }}
+                containerStyle={styles.checkboxContainer}
+                textStyle={styles.checkboxText}
+              />
+            ))}
+            <TouchableOpacity style={styles.submitButton} onPress={handleSurveyComplete}>
+              <Text style={styles.buttonText}>Complete Survey</Text>
+            </TouchableOpacity>
+          </View>
+        );
+    }
+  };
+
   return (
-    <View style={surveystyles.container}>
-      {/* Your survey questions and UI would go here */}
-      <Text style={surveystyles.text}>Survey Questions Would Go Here</Text>
-      
-      <TouchableOpacity 
-        style={surveystyles.button} 
-        onPress={handleSurveyComplete}
-      >
-        <Text style={surveystyles.buttonText}>Complete Survey</Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      {renderStep()}
     </View>
   );
 }
-
-const surveystyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black', // Assuming you want to keep the black background
-    marginTop: 250,
-  },
-  text: {
-    color: 'white',
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#8400ff', // Purple background
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 25, // Rounded corners
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: Dimensions.get('window').width * 0.8, // 80% of screen width
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'black',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
     padding: 20,
+    width: '90%',
+    alignItems: 'center',
   },
   question: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 5,
+    backgroundColor: '#8400ff',
+    padding: 15,
+    borderRadius: 25,
+    marginVertical: 10,
     width: '80%',
     alignItems: 'center',
   },
   selectedButton: {
-    backgroundColor: '#4CD964',
+    backgroundColor: '#6200ea',
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   nextButton: {
-    backgroundColor: '#FF9500',
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: '#8400ff',
+    padding: 15,
+    borderRadius: 25,
     marginTop: 20,
     width: '80%',
     alignItems: 'center',
   },
   submitButton: {
-    backgroundColor: '#FF3B30',
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: '#8400ff',
+    padding: 15,
+    borderRadius: 25,
     marginTop: 20,
     width: '80%',
     alignItems: 'center',
   },
-  slider: {
-    width: '80%',
-    height: 40,
+  priceText: {
+    fontSize: 16,
+    marginTop: 10,
   },
-})
-
-export default SurveyComponent
+  checkboxContainer: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    width: '80%',
+  },
+  checkboxText: {
+    fontSize: 16,
+  },
+});
