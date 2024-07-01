@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Portal } from '@gorhom/portal';
 import { SimpleGrid } from 'react-native-super-grid'; // Make sure this is imported
 import * as WebBrowser from 'expo-web-browser';
+import { HomeGrid } from './FlatGrid';
+import Home from './Home';
 
 const { width, height } = Dimensions.get('window');
 
@@ -103,18 +105,7 @@ const ProductItem = ({ item, onBuy, depth = 0 }) => {
                 </TouchableOpacity>
 
                 <Text style={styles.similarItemsTitle}>Similar Styled Items</Text>
-                <SimpleGrid
-                  itemDimension={100}
-                  data={similarItems}
-                  spacing={10}
-                  renderItem={({item: similarItem}) => (
-                    <ProductItem 
-                      item={similarItem} 
-                      onBuy={onBuy} 
-                      depth={depth + 1}
-                    />
-                  )}
-                />
+                <HomeGrid clothing={similarItems} />
               </ScrollView>
             </Animated.View>
           </View>
