@@ -87,11 +87,21 @@ const OAuthButton = ({ strategy, signup, icon, color, text }) => {
 
   return (
     <>
-      <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={onPress}>
-        <Ionicons name={icon} size={24} color="white" />
-        <Text style={styles.buttonText}>{text}</Text>
-      </TouchableOpacity>
-      <AgreementModal isVisible={showAgreement} onAgree={handleAgree} onCancel={handleCancel} />
+      {signup ?
+        <>
+        <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={onPress}>
+          <Ionicons name={icon} size={24} color="white" />
+          <Text style={styles.buttonText}>{text}</Text>
+        </TouchableOpacity>
+        <AgreementModal isVisible={showAgreement} onAgree={handleAgree} onCancel={handleCancel} />
+      </> :
+      <>
+        <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={handleAgree}>
+          <Ionicons name={icon} size={24} color="white" />
+          <Text style={styles.buttonText}>{text}</Text>
+        </TouchableOpacity>
+      </>
+      }
     </>
   );
 };
