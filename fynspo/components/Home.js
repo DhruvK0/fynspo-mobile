@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions, SafeAreaView, ActivityIndicator} from 'react-native';
+import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions, SafeAreaView, ActivityIndicator, Alert} from 'react-native';
 import ImageViewer from './ImageViewer';
 import Button from './Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
@@ -73,7 +73,7 @@ export default function Home() {
       setLoading(true);
 
     }; 
-
+    
     const pickCameraImageAsync = async () => {
         let result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
@@ -84,8 +84,26 @@ export default function Home() {
         if (!result.canceled) {
         setSelectedImage(result.assets[0].uri);
         setShowAppOptions(true);
-        const searchResults = await makeApiCall(result.assets[0].base64);
-        setClothing(searchResults);
+        try {
+            const searchResults = await makeApiCall(result.assets[0].base64);
+            setClothing(searchResults);
+        } catch (error) {
+            console.log('API Error:', error);
+            Alert.alert(
+            'Error',
+            'Failed to get matching clothes. Please upload another image or try again.',
+            [
+                {
+                text: 'OK',
+                onPress: () => {
+                    setSelectedImage(null);
+                    setShowAppOptions(false);
+                    setClothing(null);
+                },
+                },
+            ]
+            );
+        }
         } else {
         // alert('You did not select any image.');
         }
@@ -101,8 +119,26 @@ export default function Home() {
         if (!result.canceled) {
         setSelectedImage(result.assets[0].uri);
         setShowAppOptions(true);
-        const searchResults = await makeApiCall(result.assets[0].base64);
-        setClothing(searchResults);
+        try {
+            const searchResults = await makeApiCall(result.assets[0].base64);
+            setClothing(searchResults);
+        } catch (error) {
+            console.log('API Error:', error);
+            Alert.alert(
+            'Error',
+            'Failed to get matching clothes. Please upload another image or try again.',
+            [
+                {
+                text: 'OK',
+                onPress: () => {
+                    setSelectedImage(null);
+                    setShowAppOptions(false);
+                    setClothing(null);
+                },
+                },
+            ]
+            );
+        }
         } else {
         // alert('You did not select any image.');
         }
@@ -225,8 +261,6 @@ export default function Home() {
                       <HomeGrid clothing={clothing[category]} />
                     </View>
                   </ScrollView>
-                  
-                
                 </SafeAreaView>
               }
             </View>
@@ -246,9 +280,6 @@ export default function Home() {
                       <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
                       <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
                     </View>
-                    {/* <View style={styles.loaderContainer}>
-                                <ActivityIndicator size="large" color="#8400ff"/>            
-                              </View> */}
                   </View>
               </View>
             </View>
