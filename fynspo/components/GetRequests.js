@@ -17,7 +17,7 @@ export async function makeApiCall(requestBody) {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       throw error;  // Re-throw the error to be handled by the caller
     }
   }
