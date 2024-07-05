@@ -78,13 +78,18 @@ export default function MainFlow() {
                         // return <MaterialIcons name={iconName} size={40} color={color} style={{ fontWeight: focused ? 'bold' : 'normal', paddingTop: 5 }} />;
                         return <SvgComponent name={iconName} size={size} color={color} />;  
                       },
-                        tabBarActiveTintColor: 'white',
-                        tabBarInactiveTintColor: 'white',
+                        // tabBarActiveTintColor: 'white',
+                        // tabBarInactiveTintColor: 'white',
                         headerShown: false,
-                        tabBarActiveBackgroundColor: '#8400ff', tabBarInactiveBackgroundColor: '#8400ff',
+                        tabBarActiveBackgroundColor: '#000', tabBarInactiveBackgroundColor: '#000',
                         tabBarStyle: {
                         height: 75, // Adjust the base height as needed
-                        borderTopWidth: 0,
+                        borderTopWidth: 1,
+                        borderTopColor: '#8400ff',
+                        },
+                        tabBarItemStyle: {
+                          paddingTop: 5, // Add this line to adjust icon position
+                          backgroundColor: "black"
                         },
                         tabBarShowLabel: false,
                     })}
@@ -119,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottomFill: {
-    backgroundColor: '#8400ff',
+    backgroundColor: '#000',
     position: 'absolute',
     bottom: 0,
     left: 0,
