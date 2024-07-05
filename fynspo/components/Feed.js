@@ -347,6 +347,8 @@ const styles = StyleSheet.create({
     },
     categoriesContainer: {
         maxHeight: 50, // Adjust this value as needed
+        borderBottomWidth: 1,
+        borderBottomColor: '#8400ff',
     },
     gridContainer: {
         flex: 1,
