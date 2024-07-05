@@ -258,7 +258,7 @@ export default function Home() {
                     </ScrollView>
 
                     <View style={styles.gridContainer}>
-                      <HomeGrid clothing={clothing[category]} />
+                      <HomeGrid clothing={clothing[category][0]} />
                     </View>
                   </ScrollView>
                 </SafeAreaView>
