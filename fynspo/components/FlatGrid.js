@@ -115,7 +115,7 @@ export function HomeGrid({ clothing }) {
       spacing={10}
       renderItem={({ item }) => (     
         <View style={styles.itemContainer}>
-            <ProductItem item={item} onBuy={handleBuy} />
+            <ProductItem item={item} onBuy={handleBuy} id={item.id}/>
         </View>
       )}
     />
