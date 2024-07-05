@@ -1,19 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Image, Pressable, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, PanResponder, Linking, ScrollView } from 'react-native';
+import { View, Image, Pressable, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, PanResponder, Linking, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Portal } from '@gorhom/portal';
 import { SimpleGrid } from 'react-native-super-grid';
 import * as WebBrowser from 'expo-web-browser';
 import { HomeGrid } from './FlatGrid';
 import Home from './Home';
+import { getSimilarItems } from './GetRequests';
 
 const { width, height } = Dimensions.get('window');
 
-const ProductItem = ({ item, onBuy, depth = 0 }) => {
+const ProductItem = ({ item, onBuy, depth = 0, id, view}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [visibleItems, setVisibleItems] = useState([]);
   const [hiddenItems, setHiddenItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [loading, setLoading] = useState(true);
   const slideAnim = useRef(new Animated.Value(width)).current;
 
   useEffect(() => {
@@ -21,89 +23,9 @@ const ProductItem = ({ item, onBuy, depth = 0 }) => {
     const fetchSimilarItems = async () => {
       try {
         // Dummy data for similar items with provided image links
-        const dummyData = [
-          {
-            id: `similar-${depth}-0`,
-            name: 'Similar Item 1',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/41/c9/76/41c976d2e9459aba38c3f5207c26f6d6.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-1`,
-            name: 'Similar Item 2',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/a1/af/27/a1af272327639de4c1f3f2c62557e7ab.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-2`,
-            name: 'Similar Item 3',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/9b/50/72/9b50721394ec9a8f27d9b69279ca56dd.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-3`,
-            name: 'Similar Item 4',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/474x/d4/30/57/d4305735690274d0181fcd9732a1676d.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-4`,
-            name: 'Similar Item 5',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/c4/26/90/c42690d92c96536967abbd2a83d429e1.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-5`,
-            name: 'Similar Item 6',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/5b/90/21/5b90213fad525861f3a87b94506fd69c.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-6`,
-            name: 'Similar Item 7',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/86/d7/c3/86d7c326848690a57e3d0a1751c190ec.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-7`,
-            name: 'Similar Item 8',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/e2/3b/96/e23b96ce905149b2f5d1741d35baf2df.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-8`,
-            name: 'Similar Item 9',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/474x/06/0f/3a/060f3a7738b1e54e0c62197934f53697.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-9`,
-            name: 'Similar Item 10',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/73/5b/65/735b6567926c5f7e612eebd33cbf8f54.jpg',
-            product_link: 'https://example.com',
-          },
-          {
-            id: `similar-${depth}-10`,
-            name: 'Similar Item 11',
-            price: (Math.random() * 100).toFixed(2),
-            image: 'https://i.pinimg.com/236x/ef/b7/d3/efb7d390149bcf7a2400932484e0bf0c.jpg',
-            product_link: 'https://example.com',
-          },
-        ];
-
-        // Update the visibleItems and hiddenItems state
-        setVisibleItems(dummyData);
-        // setHiddenItems(dummyData.slice(6));
+        const result = await getSimilarItems(id, view, 20);
+        setVisibleItems(result);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching similar items:', error);
       }
@@ -229,10 +151,15 @@ const ProductItem = ({ item, onBuy, depth = 0 }) => {
                     </TouchableOpacity>
                   </>
                 )}
-
-                <Text style={styles.similarItemsTitle}>Similar Styled Items</Text>
-
-                <HomeGrid clothing={visibleItems} />
+                {loading ? 
+                <View style={styles.similarItemsTitle}>
+                  <ActivityIndicator size="large" color="#8400ff"/>
+                </View> : 
+                <View style={styles.scrollTitle}>
+                  <Text style={styles.similarItemsTitle}>Similar Styled Items</Text>
+                  <HomeGrid clothing={visibleItems} />
+                </View>
+                }
               </ScrollView>
             </Animated.View>
           </View>
@@ -272,6 +199,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 20,
+  },
+  scrollTitle: {
+    alignItems: 'center',
   },
   modalImage: {
     width: width * 0.8,
