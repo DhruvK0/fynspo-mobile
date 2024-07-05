@@ -53,7 +53,8 @@
     "undefined": "u/expo/metro-runtime"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "react-native-svg-transformer": "^1.4.0"
   },
   "private": true
 }
