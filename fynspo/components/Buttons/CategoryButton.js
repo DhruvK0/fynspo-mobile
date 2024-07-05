@@ -12,7 +12,7 @@ export default function CategoryButton({ label, onPress, loading }) {
             {loading ? (
                     <Button style={styles.button} buttonColor="#d3d3d3" mode="contained" onPress={() => console.log(label)}></Button>
             ) : (
-            <Button style={styles.button} buttonColor="#8400FF" mode="contained" onPress={onPress}>
+            <Button style={styles.button} buttonColor="#8400FF" mode="contained" onPress={onPress} compact >
                 {label}
             </Button>
             )}
@@ -24,5 +24,6 @@ const styles = StyleSheet.create({
   button: {
     marginLeft: 5,
     marginRight: 5,
+    paddingHorizontal: 8,
   },
 });
