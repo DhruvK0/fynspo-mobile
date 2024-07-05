@@ -23,6 +23,7 @@ import ProductItem from './ProductItem';
 import { Portal } from 'react-native-paper';
 import { SurveyScreen } from './Auth/Survey';
 import { useState, useEffect } from 'react';
+import SvgComponent from './NavBarIcons';
 
 const Tab = createBottomTabNavigator();
 const tokenCache = {
@@ -65,17 +66,18 @@ export default function MainFlow() {
                         tabBarIcon: ({ focused, color, size }) => {
                         let iconName;
 
-                        if (route.name === 'Feed') {
-                            iconName = focused ? 'trending-up' : 'trending-up';
-                        } else if (route.name === 'Home') {
-                            iconName = focused ? 'home' : 'camera';
+                        if (route.name === 'Home') {
+                            iconName = focused ? 'home' : 'home-outline';
+                        } else if (route.name === 'Camera') {
+                            iconName = focused ? 'camera' : 'camera-outline';
                         } else if (route.name === 'Profile') {
                             iconName = focused ? 'person' : 'person-outline';
                         }
 
                         // Use a different style for focused icons
-                        return <MaterialIcons name={iconName} size={40} color={color} style={{ fontWeight: focused ? 'bold' : 'normal', paddingTop: 5 }} />;
-                        },
+                        // return <MaterialIcons name={iconName} size={40} color={color} style={{ fontWeight: focused ? 'bold' : 'normal', paddingTop: 5 }} />;
+                        return <SvgComponent name={iconName} size={size} color={color} />;  
+                      },
                         tabBarActiveTintColor: 'white',
                         tabBarInactiveTintColor: 'white',
                         headerShown: false,
@@ -88,8 +90,8 @@ export default function MainFlow() {
                     })}
 
                     > 
-                    <Tab.Screen name="Feed" component={Feed} />
-                    <Tab.Screen name="Home" component={Home} />
+                    <Tab.Screen name="Home" component={Feed} />
+                    <Tab.Screen name="Camera" component={Home} />
                     <Tab.Screen name="Profile" component={ProfileScreen} />
                     </Tab.Navigator>
                     <View style={styles.bottomFill}/>
