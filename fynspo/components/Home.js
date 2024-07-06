@@ -208,7 +208,9 @@ export default function Home() {
                     showsVerticalScrollIndicator={false}
                   >
                     <View style={styles.imageContainer} ref={imageRef} collapsable={false}>
-                      <IconButton icon="refresh" label="Reset" onPress={onReset} />
+                      {/* <View style={styles.resetButtonContainer}>
+                        <IconButton icon="close" color="red" onPress={onReset} />
+                      </View> */}
                       <ImageViewer 
                         placeholderImageSource={PlaceholderImage} 
                         selectedImage={selectedImage} 
@@ -230,10 +232,11 @@ export default function Home() {
                     scrollEventThrottle={16}
                     stickyHeaderIndices={isSticky ? [1] : []}
                     showsVerticalScrollIndicator={false}
-                    // style={{paddingTop: 40}}
                   >
                     <View style={styles.imageContainer} ref={imageRef} collapsable={false}>
-                      <IconButton icon="refresh" label="Reset" onPress={onReset} />
+                      <View style={styles.resetButtonContainer}>
+                        <IconButton icon="close" color="white" onPress={onReset} />
+                      </View>
                       <ImageViewer 
                         placeholderImageSource={PlaceholderImage} 
                         selectedImage={selectedImage} 
@@ -293,26 +296,26 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
     footerContainer: {
-      // flex: 1 / 3,
-      // alignItems: 'center',
-      // marginBottom: 20,
     },},
     optionsContainer: {
-      // position: 'absolute',
-    //   bottom: 10,
-    //   flex: 1,
+      // flex: 1
     },
     imageContainer: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      height: '50%',
+      // width: '100%',
       paddingTop: 20,
+    },
+    resetButtonContainer: {
+      position: 'absolute',
+      top: 30,
+      right: 50,
+      zIndex: 1,
     },
     optionsRow: {
       alignItems: 'center',
@@ -321,7 +324,6 @@ const styles = StyleSheet.create({
     buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // width: '50%', // Adjust the width as needed
     paddingBottom: 100,
     },
     categoryContainer: {
@@ -336,10 +338,156 @@ const styles = StyleSheet.create({
       paddingLeft: 2,
     },
     loaderContainer: {
-      // flex: 1,
       justifyContent: 'center',
       paddingTop: 50,
-      // marginBottom: 150, 
-      // alignItems: 'center',
     },
 });
+//         <View style={{backgroundColor: '000'}}>
+//         {showAppOptions ? (
+//           <View style={[styles.container, showAppOptions]}>
+//             <View style={styles.optionsContainer}>
+//               {loading ? 
+//                 <SafeAreaView>
+//                   <ScrollView
+//                     ref={scrollViewRef}
+//                     onScroll={handleScroll}
+//                     scrollEventThrottle={16}
+//                     stickyHeaderIndices={isSticky ? [1] : []}
+//                     showsVerticalScrollIndicator={false}
+//                   >
+//                     <View style={styles.imageContainer} ref={imageRef} collapsable={false}>
+//                       <IconButton icon="refresh" label="Reset" onPress={onReset} />
+//                       <ImageViewer 
+//                         placeholderImageSource={PlaceholderImage} 
+//                         selectedImage={selectedImage} 
+//                         style={showAppOptions && { height: '100%', width: '100%' }} 
+//                         height={screenHeight / 2}
+//                       />
+//                       {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+//                     </View>
+//                     <View style={styles.loaderContainer}>
+//                       <ActivityIndicator size="large" color="#8400ff"/> 
+//                       <Text style={{color: 'white', textAlign: 'center', marginTop: 10, fontSize: 20, fontWeight: 'bold'}}>Getting Your Matches</Text>           
+//                     </View>
+//                   </ScrollView>
+//                 </SafeAreaView> :
+//                 <SafeAreaView>
+//                   <ScrollView
+//                     ref={scrollViewRef}
+//                     onScroll={handleScroll}
+//                     scrollEventThrottle={16}
+//                     stickyHeaderIndices={isSticky ? [1] : []}
+//                     showsVerticalScrollIndicator={false}
+//                     // style={{paddingTop: 40}}
+//                   >
+//                     <View style={styles.imageContainer} ref={imageRef} collapsable={false}>
+//                       <IconButton icon="refresh" label="Reset" onPress={onReset} />
+//                       <ImageViewer 
+//                         placeholderImageSource={PlaceholderImage} 
+//                         selectedImage={selectedImage} 
+//                         style={showAppOptions && { height: '100%', width: '100%' }} 
+//                         height={screenHeight / 3.5}
+//                       />
+//                       {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+//                     </View>
+
+
+//                     <ScrollView 
+//                       horizontal={true} 
+//                       showsHorizontalScrollIndicator={false}
+//                       style={styles.categoriesContainer}
+//                     >
+//                       {Object.keys(clothing).map((key, index) => (
+//                         <CategoryButton 
+//                           key={index} 
+//                           label={key} 
+//                           onPress={() => setCategory(key)}
+//                         />
+//                       ))}
+//                     </ScrollView>
+
+//                     <View style={styles.gridContainer}>
+//                       <HomeGrid clothing={clothing[category][0]} />
+//                     </View>
+//                   </ScrollView>
+//                 </SafeAreaView>
+//               }
+//             </View>
+//           </View>
+//         ) : (
+//           <View style={[styles.container, showAppOptions]}>
+//             <View style={styles.optionsContainer}>
+//               <View style={styles.imageContainer}>
+//                 <View ref={imageRef} collapsable={false}>
+//                   <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }} height={screenHeight / 2}/>
+//                   {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+//                 </View>
+//               </View>
+//               <View>
+//                   <View style={styles.footerContainer}>
+//                     <View style={styles.buttonContainer}>
+//                       <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
+//                       <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
+//                     </View>
+//                   </View>
+//               </View>
+//             </View>
+//           </View>
+//         )}
+//         </View>
+//     )
+    
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     // flex: 1,
+//     backgroundColor: '#000',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     footerContainer: {
+//       // flex: 1 / 3,
+//       // alignItems: 'center',
+//       // marginBottom: 20,
+//     },},
+//     optionsContainer: {
+//       // position: 'absolute',
+//     //   bottom: 10,
+//     //   flex: 1,
+//     },
+//     imageContainer: {
+//       flex: 1,
+//       alignItems: 'center',
+//       justifyContent: 'center',
+//       height: '50%',
+//       paddingTop: 20,
+//     },
+//     optionsRow: {
+//       alignItems: 'center',
+//       flexDirection: 'row',
+//     },
+//     buttonContainer: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     // width: '50%', // Adjust the width as needed
+//     paddingBottom: 100,
+//     },
+//     categoryContainer: {
+//       alignItems: 'center',
+//       justifyContent: 'center',
+//       flexDirection: 'row',
+//     },
+//     categoriesContainer: {
+//       backgroundColor: 'black',
+//       paddingTop: 20,
+//       paddingBottom: 10,
+//       paddingLeft: 2,
+//     },
+//     loaderContainer: {
+//       // flex: 1,
+//       justifyContent: 'center',
+//       paddingTop: 50,
+//       // marginBottom: 150, 
+//       // alignItems: 'center',
+//     },
+// });
