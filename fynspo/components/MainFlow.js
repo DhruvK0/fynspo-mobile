@@ -44,7 +44,7 @@ const tokenCache = {
 };
 
 export default function MainFlow() {
-    const { user } = useUser();
+  const { user } = useUser();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
 
   useEffect(() => {
