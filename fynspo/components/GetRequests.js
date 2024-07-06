@@ -1,12 +1,21 @@
 //Function to get all the requests from the database
-export async function makeApiCall(requestBody) {
+export async function makeApiCall(image_string, metadata) {
     //write data to spreadsheet
     // const timestamp = new Date().toLocaleString();
     // writeToSheet([timestamp, 'test_user',  requestBody.image]);
   
     const formdata = new FormData();
-    // const test = ''
-    formdata.append('image', requestBody);
+    
+    formdata.append('image', image_string); 
+    if (metadata.fashionPreference != null && metadata.fashionPreference != 'B') {
+      formdata.append('sex', metadata.fashionPreference);
+    }
+    if (metadata.priceRange) {
+      formdata.append('price_low', metadata.priceRange[0]);
+      formdata.append('price_high', metadata.priceRange[1]);
+    }
+    formdata.append('item_count', "20");
+
     // formdata.append('sex', "M");
     // formdata.append('price_high', 100);
     

@@ -24,7 +24,7 @@ import CategoryButton from './Buttons/CategoryButton';
 import Example, {SuperGridExample, FeedGrid, HomeGrid } from './FlatGrid';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-
+import { useUser } from "@clerk/clerk-expo";
 
 const PlaceholderImage = require('../assets/images/background-image.png');
 const screenHeight = Dimensions.get('window').height;
@@ -43,6 +43,7 @@ export default function Home() {
     const imageRef = useRef();
     const [isSticky, setIsSticky] = useState(false);
     const scrollViewRef = useRef(null);
+    const { user } = useUser();
 
     //create a useeffect to console log cateogry changes
     useEffect(() => {
@@ -85,7 +86,7 @@ export default function Home() {
         setSelectedImage(result.assets[0].uri);
         setShowAppOptions(true);
         try {
-            const searchResults = await makeApiCall(result.assets[0].base64);
+            const searchResults = await makeApiCall(result.assets[0].base64, user.unsafeMetadata);
             setClothing(searchResults);
         } catch (error) {
             console.log('API Error:', error);
@@ -120,7 +121,7 @@ export default function Home() {
         setSelectedImage(result.assets[0].uri);
         setShowAppOptions(true);
         try {
-            const searchResults = await makeApiCall(result.assets[0].base64);
+            const searchResults = await makeApiCall(result.assets[0].base64, user.unsafeMetadata);
             setClothing(searchResults);
         } catch (error) {
             console.log('API Error:', error);
