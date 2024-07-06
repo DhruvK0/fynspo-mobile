@@ -1,29 +1,12 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, Text, View, Platform, ScrollView, FlatList, Dimensions} from 'react-native';
+import { StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-expo";
+import { ClerkProvider } from "@clerk/clerk-expo";
 import Constants from "expo-constants"
-import SignUpScreen from "./components/Auth/SignUpScreen";
-import SignInScreen from "./components/Auth/SignInScreen";
 import * as SecureStore from "expo-secure-store";
-import AuthContainer from './components/Auth/AuthContainer';
-import Example, {SuperGridExample} from './components/FlatGrid';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import Home from './components/Home';
-import ProfileScreen from './components/Profile';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-// import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-// import { CameraUnselected } from './components/Svgs';
-import { PortalProvider } from '@gorhom/portal';
-import { useUser } from "@clerk/clerk-expo";
-import Feed from './components/Feed';
-import ProductItem from './components/ProductItem';
-import { Portal } from 'react-native-paper';
 import MainFlow from './components/MainFlow';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
-const Tab = createBottomTabNavigator();
 const tokenCache = {
   async getToken(key) {
     try {
@@ -42,6 +25,14 @@ const tokenCache = {
 };
 
 export default function App() {
+  useEffect(() => {
+    const lockOrientation = async () => {
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    };
+
+    lockOrientation();
+  }, []);
+
   return (
     <ClerkProvider 
       publishableKey={Constants.expoConfig.extra.clerkPublishableKey}
