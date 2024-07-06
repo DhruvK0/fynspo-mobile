@@ -212,7 +212,7 @@ export default function Home() {
                         placeholderImageSource={PlaceholderImage} 
                         selectedImage={selectedImage} 
                         style={showAppOptions && { height: '100%', width: '100%' }} 
-                        height={screenHeight / 3.5}
+                        height={screenHeight / 2}
                       />
                       {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
                     </View>
