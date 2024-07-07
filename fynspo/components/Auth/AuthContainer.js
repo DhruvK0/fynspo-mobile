@@ -1,22 +1,67 @@
 import React, { useState, useEffect } from 'react'
-import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native'
-import { useUser } from '@clerk/clerk-expo'
+import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking } from 'react-native'
+import { useUser, useClerk } from '@clerk/clerk-expo'
 import SignInScreen from './SignInScreen'
 import SignUpScreen from './SignUpScreen'
 import { SignInWithOAuthApple, SignInWithOAuthGoogle } from './SignInWithOAuth'
 import SurveyComponent from './Survey'
 
+const AgreementModal = ({ isVisible, onAgree, onCancel }) => (
+  <Modal
+    animationType="slide"
+    transparent={true}
+    visible={isVisible}
+    onRequestClose={onCancel}
+  >
+    <View style={styles.centeredView}>
+      <View style={styles.modalView}>
+        <Text style={styles.modalText}>
+          By continuing, you agree to our{' '}
+          <Text style={styles.link} onPress={() => Linking.openURL('https://fynspo.com/tos')}>
+            Terms of Service
+          </Text>{' '}
+          and{' '}
+          <Text style={styles.link} onPress={() => Linking.openURL('https://fynspo.com/eula')}>
+            End User License Agreement
+          </Text>
+        </Text>
+        <TouchableOpacity style={[styles.modalbutton, styles.modalbuttonClose]} onPress={onAgree}>
+          <Text style={styles.modalbuttonText}>Agree and Continue</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.modalbutton, styles.modalbuttonCancel]} onPress={onCancel}>
+          <Text style={styles.modalbuttonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+)
 
 export default function AuthContainer() {
-  const { isSignedIn, user } = useUser();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [surveyCompleted, setSurveyCompleted] = useState(false);
+  const { isSignedIn, user } = useUser()
+  const { signOut } = useClerk()
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [surveyCompleted, setSurveyCompleted] = useState(false)
+  const [showAgreement, setShowAgreement] = useState(false)
 
   useEffect(() => {
     if (isSignedIn && user) {
-      setSurveyCompleted(user.publicMetadata.surveyCompleted);
+      setSurveyCompleted(user.publicMetadata.surveyCompleted)
+      if (!user.publicMetadata.agreementAccepted) {
+        setShowAgreement(true)
+      }
     }
-  }, [isSignedIn, user]);
+  }, [isSignedIn, user])
+
+  const handleAgreementAccepted = async () => {
+    setShowAgreement(false)
+    await user.update({ publicMetadata: { agreementAccepted: true } })
+  }
+
+  const handleAgreementCancelled = async () => {
+    setShowAgreement(false)
+    await signOut()
+    await user.destroy()
+  }
 
   if (!isSignedIn) {
     return (
@@ -33,8 +78,8 @@ export default function AuthContainer() {
           {isSignUp ? (
             <SignUpScreen
               onAccountExists={() => {
-                Alert.alert("Account already exists", "Please sign in instead.");
-                setIsSignUp(false);
+                Alert.alert('Account already exists', 'Please sign in instead.')
+                setIsSignUp(false)
               }}
             />
           ) : (
@@ -43,13 +88,25 @@ export default function AuthContainer() {
           <View style={styles.authToggle}>
             <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
               <Text style={styles.toggleText}>
-                {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+                {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
-    );
+    )
+  }
+
+  if (isSignedIn && !user.publicMetadata.agreementAccepted) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <AgreementModal
+          isVisible={showAgreement}
+          onAgree={handleAgreementAccepted}
+          onCancel={handleAgreementCancelled}
+        />
+      </SafeAreaView>
+    )
   }
 
   if (isSignedIn && !surveyCompleted) {
@@ -57,16 +114,16 @@ export default function AuthContainer() {
       <SafeAreaView style={styles.container}>
         <SurveyComponent onComplete={() => setSurveyCompleted(true)} />
       </SafeAreaView>
-    );
+    )
   }
 
-  // If signed in and survey completed, render main content
   return (
     <SafeAreaView style={styles.container}>
       <Text>Welcome! You're signed in and have completed the survey.</Text>
     </SafeAreaView>
-  );
+  )
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -113,5 +170,55 @@ const styles = StyleSheet.create({
   toggleText: {
     color: 'black',
     textAlign: 'center',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '80%',
+  },
+  modalText: {
+    marginBottom: 20,
+    textAlign: 'center',
+    fontSize: 18,
+  },
+  modalbutton: {
+    borderRadius: 25,
+    padding: 15,
+    elevation: 2,
+    width: '100%',
+    marginVertical: 5,
+  },
+  modalbuttonClose: {
+    backgroundColor: '#8400ff',
+  },
+  modalbuttonCancel: {
+    backgroundColor: '#f44336',
+  },
+  modalbuttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  link: {
+    color: '#2196F3',
+    textDecorationLine: 'underline',
   },
 });

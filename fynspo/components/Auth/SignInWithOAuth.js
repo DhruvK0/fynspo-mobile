@@ -74,6 +74,49 @@ const OAuthButton = ({ strategy, signup, icon, color, text }) => {
       if (createdSessionId) {
         setActive({ session: createdSessionId });
       } else {
+        if (signup) {
+          // Check if the account already exists during sign-up
+          try {
+            await signUp.create({});
+          } catch (err) {
+            if (err.errors && err.errors[0].code === 'form_identifier_exists') {
+              Alert.alert(
+                "Account Already Exists",
+                "An account with this email already exists. Please sign in instead.",
+                [{ text: "OK" }]
+              );
+            } else {
+              console.error("Sign-up error", err);
+              Alert.alert(
+                "Sign-up Error",
+                "An error occurred during sign-up. Please try again.",
+                [{ text: "OK" }]
+              );
+            }
+            return;
+          }
+        } else {
+          // Check if the account exists during sign-in
+          try {
+            await signIn.create({});
+          } catch (err) {
+            if (err.errors && err.errors[0].code === 'form_identifier_not_found') {
+              Alert.alert(
+                "Account Not Found",
+                "No account found with this email. Please sign up instead.",
+                [{ text: "OK" }]
+              );
+            } else {
+              console.error("Sign-in error", err);
+              Alert.alert(
+                "Sign-in Error",
+                "An error occurred during sign-in. Please try again.",
+                [{ text: "OK" }]
+              );
+            }
+            return;
+          }
+        }
         // Use signIn or signUp for next steps such as MFA
       }
     } catch (err) {

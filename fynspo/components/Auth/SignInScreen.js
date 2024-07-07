@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import { useSignIn } from "@clerk/clerk-expo";
 
 export default function SignInScreen() {
@@ -21,12 +21,29 @@ export default function SignInScreen() {
       // This indicates the user is signed in
       await setActive({ session: completeSignIn.createdSessionId });
     } catch (err) {
-      console.log(err);
+      if (err.errors && err.errors[0].code === 'form_identifier_not_found') {
+        // Handle the case when the account doesn't exist
+        Alert.alert(
+          'Account Not Found',
+          'The account you are trying to sign in with does not exist.',
+          [{ text: 'OK' }],
+          { cancelable: false }
+        );
+      } else {
+        // Handle other errors
+        console.log('Sign-in error:', err);
+        Alert.alert(
+          'Sign-In Error',
+          'An error occurred during sign-in. Please try again.',
+          [{ text: 'OK' }],
+          { cancelable: false }
+        );
+      }
     }
   };
 
   return (
-    <View >
+    <View>
       <View style={styles.inputContainer}>
         <TextInput
           autoCapitalize="none"
@@ -86,6 +103,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-    
   },
 });
