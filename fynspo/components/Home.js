@@ -257,6 +257,7 @@ export default function Home() {
                           key={index} 
                           label={key} 
                           onPress={() => setCategory(key)}
+                          active={category === key}
                         />
                       ))}
                     </ScrollView>

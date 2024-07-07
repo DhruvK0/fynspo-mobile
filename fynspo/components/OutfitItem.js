@@ -148,10 +148,11 @@ const OutfitItem = ({ item, onBuy }) => {
                 >
                   {clothing && Object.keys(clothing).map((key, index) => (
                     <CategoryButton 
-                            key={index} 
-                            label={key} 
-                            onPress={() => setCategory(key)}
-                          />
+                      key={index} 
+                      label={key} 
+                      onPress={() => setCategory(key)}
+                      active={category === key}
+                    />
                   ))}
                 </ScrollView>
                 <View style={styles.gridContainer}>
