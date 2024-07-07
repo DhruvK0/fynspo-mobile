@@ -1,6 +1,6 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from 'react';
-import { Text, StyleSheet, View, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, ScrollView, Image } from 'react-native';
 import CategoryButton from "./Buttons/CategoryButton";
 import { useState } from "react";
 import { SuperGridExample, FeedGrid } from "./FlatGrid";
@@ -247,10 +247,11 @@ export default function Feed() {
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.content}>
-                     <ScrollView 
-                      horizontal={true} 
-                      showsHorizontalScrollIndicator={false}
-                      style={styles.categoriesContainer}
+                  <Image source={require('../assets/fynspo_logo.jpg')} style={{width: 200, height: 50, marginBottom: 10}} />
+                    <ScrollView 
+                    horizontal={true} 
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.categoriesContainer}
                     >
                       {Object.keys(trendings).map((key, index) => (
                         <CategoryButton 
