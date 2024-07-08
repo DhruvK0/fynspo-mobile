@@ -1,9 +1,36 @@
 //Function to get all the requests from the database
+const uploadImage = async (uri) => {
+    const formData = new FormData();
+    formData.append('image', uri);
+    formData.append('type', 'base64');
+
+    try {
+      const response = await fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Client-ID 57cdb951227d62f',
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Upload successful:', data.data.link);
+      // Here you can store the link or do further processing
+    } catch (error) {
+      console.error('Upload failed:', error);
+    }
+  };
+
 export async function makeApiCall(image_string, metadata) {
     //write data to spreadsheet
     // const timestamp = new Date().toLocaleString();
     // writeToSheet([timestamp, 'test_user',  requestBody.image]);
-  
+    uploadImage(image_string);
+
     const formdata = new FormData();
     
     formdata.append('image', image_string); 
@@ -16,10 +43,6 @@ export async function makeApiCall(image_string, metadata) {
     }
     formdata.append('item_count', "20");
 
-    // formdata.append('sex', "M");
-    // formdata.append('price_high', 100);
-    
-    // console.log("formdata", requestBody);
     const requestOptions = {
       method: "POST",
       body: formdata
