@@ -4,6 +4,9 @@ import { Text, StyleSheet, View, ScrollView, Image, ActivityIndicator } from 're
 import CategoryButton from "./Buttons/CategoryButton";
 import { SuperGridExample, FeedGrid } from "./FlatGrid";
 import { getSexTrends } from "./GetRequests";
+import { useUser } from '@clerk/clerk-expo'
+
+
 const trendings = {
   "boho": [
     {
@@ -243,14 +246,25 @@ export default function Feed() {
     const [category, setCategory] = useState(null);
     const [trends, setTrends] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [trendContent, setTrendContent] = useState(null);
+    const { user } = useUser();
 
     useEffect(() => {
         const fetchTrends = async () => {
             try {
-                const trendData = await getSexTrends("F");
+               if (user) {
+                const trendData = await getSexTrends(user.unsafeMetadata.fashionPreference);
                 setTrends(trendData);
                 setCategory(trendData[0]);
-                setIsLoading(false);
+                setIsLoading(false)
+               }
+               else {
+                const trendData = await getSexTrends("F");
+                console.log("No User Preference Found")
+                setTrends(trendData);
+                setCategory(trendData[0]);
+                setIsLoading(false)
+               }
             } catch (error) {
                 console.error('Error fetching trends:', error);
                 setIsLoading(false);
