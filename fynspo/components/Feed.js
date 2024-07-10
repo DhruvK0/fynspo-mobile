@@ -22,21 +22,38 @@ export default function Feed() {
                 setCategory(trendData[0]);
                 const trendInfo = await getTrends(trendData[0])
                 setTrendContent({ [trendData[0]]: trendInfo });
-                console.log(trendInfo)
+                // console.log(trendInfo)
                 setIsLoading(false)
+                console.log(trendData.slice(1))
+
+                await Promise.all(trendData.slice(1).map(async (trend) => {
+                    const trendInfo = await getTrends(trend);
+                    setTrendContent((prevState) => ({
+                        ...prevState,
+                        [trend]: trendInfo
+                    }));
+                }));
                }
                else {
                 const trendData = await getSexTrends("F");
                 console.log("No User Preference Found")
                 setTrends(trendData);
                 setCategory(trendData[0]);
+                
                 setIsLoading(false)
                }
+
+               
+
             } catch (error) {
                 console.error('Error fetching trends:', error);
                 setIsLoading(false);
             }
+
+            
         };
+
+        
 
         fetchTrends();
     }, []);
