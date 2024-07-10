@@ -80,12 +80,33 @@ export async function getSimilarItems(id, view, item_count = 20) {
   }
 }
 
-export async function getSexTrends(sex) {
-  const formdata = new FormData();
-
+export async function getTrends(trend, limit = "40") {
   const requestOptions = {
     method: "GET",
-    // body: formdata,
+    redirect: "follow"
+  };
+
+  const query = `https://al9bgznmmj.execute-api.us-east-1.amazonaws.com/trend?trend=${trend}&limit=${limit}`;
+
+  try {
+    const response = await fetch(query, requestOptions);
+    const result = await response.json();
+    const formattedResult = result.map(([image, category, sex, data, id]) => ({
+      image,
+      category,
+      sex,
+      data: JSON.parse(data),
+      id
+    }));
+    return formattedResult;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getSexTrends(sex) {
+  const requestOptions = {
+    method: "GET",
     redirect: "follow"
   };
 
@@ -94,7 +115,6 @@ export async function getSexTrends(sex) {
   try {
     const response = await fetch(query, requestOptions)
     const result = await response.json();
-    console.log(result)
     return result;
   } catch (error) {
     throw error;

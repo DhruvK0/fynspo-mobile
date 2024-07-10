@@ -9,41 +9,15 @@ import ImageViewer from './ImageViewer';
 const { width, height } = Dimensions.get('window');
 
 // Dummy data for clothing
-const dummyClothing = {
-  tops: [
-    [
-      { id: '1', name: 'Top 1', image: 'https://via.placeholder.com/100' },
-      { id: '2', name: 'Top 2', image: 'https://via.placeholder.com/100' },
-      { id: '3', name: 'Top 3', image: 'https://via.placeholder.com/100' },
-      { id: '4', name: 'Top 4', image: 'https://via.placeholder.com/100' },
-    ],
-  ],
-  bottoms: [
-    [
-      { id: '5', name: 'Bottom 1', image: 'https://via.placeholder.com/100' },
-      { id: '6', name: 'Bottom 2', image: 'https://via.placeholder.com/100' },
-      { id: '7', name: 'Bottom 3', image: 'https://via.placeholder.com/100' },
-      { id: '8', name: 'Bottom 4', image: 'https://via.placeholder.com/100' },
-    ],
-  ],
-  shoes: [
-    [
-      { id: '9', name: 'Shoe 1', image: 'https://via.placeholder.com/100' },
-      { id: '10', name: 'Shoe 2', image: 'https://via.placeholder.com/100' },
-      { id: '11', name: 'Shoe 3', image: 'https://via.placeholder.com/100' },
-      { id: '12', name: 'Shoe 4', image: 'https://via.placeholder.com/100' },
-    ],
-  ],
-};
 
 const OutfitItem = ({ item, onBuy }) => {
   const [isOpen, setIsOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(width)).current;
   const [category, setCategory] = useState("Select Category");
-  const [clothing, setClothing] = useState(dummyClothing);
+  const [clothing, setClothing] = useState(item.data);
 
   useEffect(() => {
-    console.log(category);
+    // console.log(category);
   }, [category]);
 
   useEffect(() => {
