@@ -1,10 +1,9 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import React from 'react';
-import { Text, StyleSheet, View, ScrollView, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, StyleSheet, View, ScrollView, Image, ActivityIndicator } from 'react-native';
 import CategoryButton from "./Buttons/CategoryButton";
-import { useState } from "react";
 import { SuperGridExample, FeedGrid } from "./FlatGrid";
-
+import { getSexTrends } from "./GetRequests";
 const trendings = {
   "boho": [
     {
@@ -241,35 +240,59 @@ const trendings = {
 
 
 export default function Feed() {
-    const [category, setCategory] = useState("Preppy");
+    const [category, setCategory] = useState(null);
+    const [trends, setTrends] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTrends = async () => {
+            try {
+                const trendData = await getSexTrends("F");
+                setTrends(trendData);
+                setCategory(trendData[0]);
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Error fetching trends:', error);
+                setIsLoading(false);
+            }
+        };
+
+        fetchTrends();
+    }, []);
 
     return (
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.content}>
-                  <Image source={require('../assets/fynspo_logo.jpg')} style={{width: 200, height: 50, marginBottom: 10}} />
+                    <Image source={require('../assets/fynspo_logo.jpg')} style={{width: 200, height: 50, marginBottom: 10}} />
                     <ScrollView 
-                    horizontal={true} 
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoriesContainer}
+                        horizontal={true} 
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.categoriesContainer}
                     >
-                      {Object.keys(trendings).map((key, index) => (
-                        <CategoryButton 
-                          key={index} 
-                          label={key} 
-                          onPress={() => setCategory(key)}
-                          active={category === key}
-                        />
-                      ))}
+                        {trends && trends.map((trend, index) => (
+                            <CategoryButton 
+                                key={index} 
+                                label={trend} // Use the category property directly from the trend object
+                                onPress={() => setCategory(trend)}
+                                active={category === trend}
+                            />
+                        ))}
                     </ScrollView>
-                    <ScrollView showsVerticalScrollIndicator={false} style={styles.gridContainer}>
-                      <FeedGrid clothing={trendings[category]} />
-                    </ScrollView>
+                    {isLoading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="#8400ff" />
+                        </View>
+                    ) : (
+                        <ScrollView showsVerticalScrollIndicator={false} style={styles.gridContainer}>
+                            <FeedGrid clothing={trends[category]} />
+                        </ScrollView>
+                    )}
                 </View>
             </SafeAreaView>
         </View>
     );
-}
+  }
 
 const styles = StyleSheet.create({
     container: {

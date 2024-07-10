@@ -80,6 +80,27 @@ export async function getSimilarItems(id, view, item_count = 20) {
   }
 }
 
+export async function getSexTrends(sex) {
+  const formdata = new FormData();
+
+  const requestOptions = {
+    method: "GET",
+    // body: formdata,
+    redirect: "follow"
+  };
+
+  const query = "https://al9bgznmmj.execute-api.us-east-1.amazonaws.com/sex_trends?sex=" + sex;
+
+  try {
+    const response = await fetch(query, requestOptions)
+    const result = await response.json();
+    console.log(result)
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export function encodeImage(file) {
   return new Promise((resolve, reject) => {
       const reader = new FileReader();
