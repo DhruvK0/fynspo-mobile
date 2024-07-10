@@ -24,7 +24,6 @@ export default function Feed() {
                 setTrendContent({ [trendData[0]]: trendInfo });
                 // console.log(trendInfo)
                 setIsLoading(false)
-                console.log(trendData.slice(1))
 
                 await Promise.all(trendData.slice(1).map(async (trend) => {
                     const trendInfo = await getTrends(trend);

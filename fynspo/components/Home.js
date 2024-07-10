@@ -47,7 +47,7 @@ export default function Home() {
 
     //create a useeffect to console log cateogry changes
     useEffect(() => {
-        console.log(category);
+        // console.log(category);
     }, [category]);
     //create a useefffect that console logs changes to the clothing state
     useEffect(() => {

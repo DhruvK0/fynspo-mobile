@@ -18,7 +18,7 @@ const uploadImage = async (uri) => {
       }
       
       const data = await response.json();
-      console.log('Upload successful:', data.data.link);
+      // console.log('Upload successful:', data.data.link);
       // Here you can store the link or do further processing
     } catch (error) {
       console.error('Upload failed:', error);
@@ -51,7 +51,7 @@ export async function makeApiCall(image_string, metadata) {
     try {
       const response = await fetch("https://al9bgznmmj.execute-api.us-east-1.amazonaws.com/fynspo", requestOptions);
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
       return result;
     } catch (error) {
       // console.error(error);
