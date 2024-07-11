@@ -35,7 +35,7 @@ export default function App() {
 
   return (
     <ClerkProvider 
-      publishableKey={Constants.expoConfig.extra.clerkPublishableKey}
+      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
       tokenCache={tokenCache}
     >
     <GestureHandlerRootView style={styles.container}>

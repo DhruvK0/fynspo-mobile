@@ -1,10 +1,18 @@
 module.exports = {
-  name: 'MyApp',
+  name: 'fynspo',
   version: '1.0.0',
-  extra: {
-    clerkPublishableKey: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  expo: {
+    scheme: "fynspo",
+    extra: {
+    // clerkPublishableKey: "pk_test_ZmluZS1nYXRvci02OC5jbGVyay5hY2NvdW50cy5kZXYk",
     eas: {
-      projectId: "52c280fa-9736-45f4-bee3-46b72f98288e",
+      projectId: "601bbef9-cc0a-41fc-b7a0-e263683950d4",
     }
   },
+  ios: {  
+      bundleIdentifier: 'com.fynspo.app',
+      buildNumber: '2'
+    }
+  },
+   
 };
