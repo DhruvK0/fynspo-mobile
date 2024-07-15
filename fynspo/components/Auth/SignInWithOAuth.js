@@ -17,6 +17,7 @@ export const useWarmUpBrowser = () => {
 
 WebBrowser.maybeCompleteAuthSession();
 
+
 const AgreementModal = ({ isVisible, onAgree, onCancel }) => (
   <Modal
     animationType="slide"
@@ -59,7 +60,7 @@ const AgreementModal = ({ isVisible, onAgree, onCancel }) => (
 const OAuthButton = ({ strategy, signup, icon, color, text }) => {
   useWarmUpBrowser();
   const [showAgreement, setShowAgreement] = useState(false);
-  const { startOAuthFlow } = useOAuth({ strategy });
+  const { startOAuthFlow } = useOAuth({ strategy: strategy});
 
   const onPress = React.useCallback(async () => {
     setShowAgreement(true);
@@ -69,8 +70,8 @@ const OAuthButton = ({ strategy, signup, icon, color, text }) => {
     setShowAgreement(false);
     try {
       const { createdSessionId, signIn, signUp, setActive } =
-        await startOAuthFlow({ redirectUrl: ExpoLinking.createURL("/dashboard", { scheme: "myapp" })});
-
+        await startOAuthFlow({ redirectUrl: "fynspo://oauth-native-callback" });
+        // await startOAuthFlow({ redirectUrl: ExpoLinking.createURL("/oauth-native-callback", { scheme: "fynspo" })});
       if (createdSessionId) {
         setActive({ session: createdSessionId });
       } else {

@@ -283,7 +283,7 @@ export default function Home() {
                   <View style={styles.footerContainer}>
                     <View style={styles.buttonContainer}>
                       <CircleButton theme="primary" label="Choose a photo" onPress={pickLibraryImageAsync} iconName={"image"} />
-                      <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>            
+                      <CircleButton theme="primary" label="Take a photo" onPress={pickCameraImageAsync} iconName={"camera-alt"}/>        
                     </View>
                   </View>
               </View>
