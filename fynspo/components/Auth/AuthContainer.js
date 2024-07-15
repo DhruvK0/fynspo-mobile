@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking } from 'react-native'
+import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Platform } from 'react-native'
 import { useUser, useClerk } from '@clerk/clerk-expo'
 import SignInScreen from './SignInScreen'
 import SignUpScreen from './SignUpScreen'
@@ -69,7 +69,9 @@ export default function AuthContainer() {
         <View style={styles.card}>
           {isSignUp ? <Text style={styles.title}>Sign Up</Text> : <Text style={styles.title}>Sign In</Text>}
           <SignInWithOAuthGoogle signup={isSignUp} />
-          <SignInWithOAuthApple signup={isSignUp} />
+          {(Platform.OS === 'ios') && 
+            <SignInWithOAuthApple signup={isSignUp} />
+          }
           <View style={styles.divider}>
             <View style={styles.line} />
             <Text style={styles.dividerText}>or</Text>

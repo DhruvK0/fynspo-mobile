@@ -11,7 +11,7 @@ module.exports = {
   },
   ios: {  
       bundleIdentifier: 'com.fynspo.app',
-      buildNumber: '3'
+      buildNumber: '4'
     }
   },
    
