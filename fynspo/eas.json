@@ -7,18 +7,18 @@
       "developmentClient": true,
       "distribution": "internal"
     },
+    "development-simulator": {
+      "extends": "development",
+      "ios": {
+        "simulator": true
+      }
+    },
     "preview": {
       "distribution": "internal"
     },
     "production": {
-      "env": {
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZnluc3BvLmNvbSQ"
-      }
     },
     "test": {
-      "env": {
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZnluc3BvLmNvbSQ"
-      }
     }
   },
   "submit": {
