@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Platform } from 'react-native'
+import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Platform, Image } from 'react-native'
 import { useUser, useClerk } from '@clerk/clerk-expo'
 import SignInScreen from './SignInScreen'
 import SignUpScreen from './SignUpScreen'
@@ -66,6 +66,7 @@ export default function AuthContainer() {
   if (!isSignedIn) {
     return (
       <SafeAreaView style={styles.container}>
+        <Image source={require('../../assets/fynspo_logo.jpg')} style={{width: 300, height: 75, marginBottom: 20, marginLeft: 0}} />
         <View style={styles.card}>
           {isSignUp ? <Text style={styles.title}>Sign Up</Text> : <Text style={styles.title}>Sign In</Text>}
           <SignInWithOAuthGoogle signup={isSignUp} />

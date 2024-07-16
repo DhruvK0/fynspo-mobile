@@ -4,7 +4,6 @@ import * as WebBrowser from "expo-web-browser";
 import { Text, View, Button, StyleSheet, TouchableOpacity, Image, Modal, Alert, Linking } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useOAuth } from "@clerk/clerk-expo";
-import * as ExpoLinking from "expo-linking"
 
 export const useWarmUpBrowser = () => {
   useEffect(() => {

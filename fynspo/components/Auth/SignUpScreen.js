@@ -161,8 +161,8 @@ const styles = StyleSheet.create({
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    marginTop: 15,
+    // marginBottom: 15,
+    // marginTop: 15,
     justifyContent: 'center',
     paddingHorizontal: 10,
   },
