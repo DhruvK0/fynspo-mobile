@@ -6,6 +6,9 @@ import Constants from "expo-constants"
 import * as SecureStore from "expo-secure-store";
 import MainFlow from './components/MainFlow';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import Aptabase from "@aptabase/react-native";
+
+Aptabase.init(process.env.EXPO_PUBLIC_APTABASE_API_KEY);
 
 const tokenCache = {
   async getToken(key) {

@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   divider: {
     flexDirection: 'row',

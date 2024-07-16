@@ -5,13 +5,20 @@ import CategoryButton from "./Buttons/CategoryButton";
 import { SuperGridExample, FeedGrid } from "./FlatGrid";
 import { getSexTrends, getTrends } from "./GetRequests";
 import { useUser } from '@clerk/clerk-expo'
+import { trackEvent } from "@aptabase/react-native";
 
 export default function Feed() {
     const [category, setCategory] = useState(null);
     const [trends, setTrends] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [trendContent, setTrendContent] = useState({});
+    const [count, setCount] = useState(0);
     const { user } = useUser();
+
+    const increment = () => {
+        setCount(count + 1);
+        trackEvent("increment", { category, count });
+    };
 
     useEffect(() => {
         const fetchTrends = async () => {
@@ -71,7 +78,10 @@ export default function Feed() {
                             <CategoryButton 
                                 key={index} 
                                 label={trend} // Use the category property directly from the trend object
-                                onPress={() => setCategory(trend)}
+                                onPress={() => {
+                                    setCategory(trend)
+                                    increment()
+                                }}
                                 active={category === trend}
                             />
                         ))}
