@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@amplitude/analytics-react-native": "^1.4.9",
     "@aptabase/react-native": "^0.3.9",
     "@clerk/clerk-expo": "^1.2.1",
     "@eva-design/eva": "^2.2.0",
@@ -16,6 +17,9 @@
     "@expo/metro-runtime": "~3.2.1",
     "@expo/vector-icons": "^14.0.0",
     "@gorhom/portal": "^1.0.14",
+    "@heap/heap-react-native-autocapture": "^0.5.2",
+    "@heap/heap-react-native-bridge": "^0.6.0",
+    "@heap/react-native-heap": "^0.22.8",
     "@ptomasroos/react-native-multi-slider": "^2.2.2",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-community/slider": "^4.5.2",
@@ -64,6 +68,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@heap/babel-plugin-heap-react-native-autocapture": "^0.5.1",
     "react-native-svg-transformer": "^1.4.0"
   },
   "private": true

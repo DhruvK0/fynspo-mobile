@@ -6,6 +6,7 @@ import { SuperGridExample, FeedGrid } from "./FlatGrid";
 import { getSexTrends, getTrends } from "./GetRequests";
 import { useUser } from '@clerk/clerk-expo'
 import { trackEvent } from "@aptabase/react-native";
+import { track } from '@amplitude/analytics-react-native';
 
 export default function Feed() {
     const [category, setCategory] = useState(null);
@@ -18,6 +19,7 @@ export default function Feed() {
     const increment = () => {
         setCount(count + 1);
         trackEvent("increment", { category, count });
+        track("increment", { category: category, count: count });
     };
 
     useEffect(() => {

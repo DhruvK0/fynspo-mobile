@@ -6,9 +6,11 @@ import Constants from "expo-constants"
 import * as SecureStore from "expo-secure-store";
 import MainFlow from './components/MainFlow';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import Aptabase from "@aptabase/react-native";
+import { init } from '@amplitude/analytics-react-native';
+import * as amplitude from '@amplitude/analytics-react-native';
 
-Aptabase.init(process.env.EXPO_PUBLIC_APTABASE_API_KEY);
+init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY);
+amplitude.track('Sign Up');
 
 const tokenCache = {
   async getToken(key) {
