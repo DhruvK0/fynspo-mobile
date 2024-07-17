@@ -5,20 +5,19 @@ import { Portal } from '@gorhom/portal';
 import CategoryButton from './Buttons/CategoryButton';
 import { HomeGrid } from './FlatGrid';
 import ImageViewer from './ImageViewer';
+import { track } from '@amplitude/analytics-react-native';
 
 const { width, height } = Dimensions.get('window');
-
-// Dummy data for clothing
 
 const OutfitItem = ({ item, onBuy }) => {
   const [isOpen, setIsOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(width)).current;
   const [category, setCategory] = useState("Select Category");
   const [clothing, setClothing] = useState(item.data);
-
-  useEffect(() => {
-    // console.log(category);
-  }, [category]);
+  const [outfitViewStartTime, setOutfitViewStartTime] = useState(null);
+  const [categoryViewStartTime, setCategoryViewStartTime] = useState(null);
+  const [categoryClickCounts, setCategoryClickCounts] = useState({});
+  const [clothingItemClickCounts, setClothingItemClickCounts] = useState({});
 
   useEffect(() => {
     if (clothing) {
@@ -28,11 +27,13 @@ const OutfitItem = ({ item, onBuy }) => {
 
   const openSubpage = () => {
     setIsOpen(true);
+    setOutfitViewStartTime(Date.now());
     Animated.timing(slideAnim, {
       toValue: 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
+    track('outfit_opened', { outfitId: item.id, image: item.image });
   };
 
   const closeSubpage = () => {
@@ -40,7 +41,17 @@ const OutfitItem = ({ item, onBuy }) => {
       toValue: width,
       duration: 300,
       useNativeDriver: true,
-    }).start(() => setIsOpen(false));
+    }).start(() => {
+      setIsOpen(false);
+      const viewDuration = (Date.now() - outfitViewStartTime) / 1000; // in seconds
+      track('outfit_closed', { 
+        outfitId: item.id, 
+        image: item.image, 
+        viewDuration,
+        categoryClicks: categoryClickCounts,
+        clothingItemClicks: clothingItemClickCounts
+      });
+    });
   };
 
   const panResponder = useRef(
@@ -70,12 +81,36 @@ const OutfitItem = ({ item, onBuy }) => {
     }
   }, [isOpen]);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.gridItem}>
-      <Image source={{ uri: item.image }} style={styles.gridItemImage} />
-      <Text style={styles.gridItemText}>{item.name}</Text>
-    </View>
-  );
+  const handleCategoryPress = (categoryName) => {
+    if (category !== categoryName) {
+      const categoryViewDuration = categoryViewStartTime ? (Date.now() - categoryViewStartTime) / 1000 : 0;
+      track('category_view', {
+        outfitId: item.id,
+        outfitImage: item.image,
+        category,
+        viewDuration: categoryViewDuration
+      });
+    }
+    setCategory(categoryName);
+    setCategoryViewStartTime(Date.now());
+    setCategoryClickCounts(prev => ({
+      ...prev,
+      [categoryName]: (prev[categoryName] || 0) + 1
+    }));
+  };
+
+  const handleClothingItemClick = (clothingItem) => {
+    setClothingItemClickCounts(prev => ({
+      ...prev,
+      [clothingItem.id]: (prev[clothingItem.id] || 0) + 1
+    }));
+    track('clothing_item_click', {
+      outfitId: item.id,
+      outfitImage: item.image,
+      clothingItemId: clothingItem.id,
+      category
+    });
+  };
 
   return (
     <>
@@ -95,54 +130,46 @@ const OutfitItem = ({ item, onBuy }) => {
             >
               <SafeAreaView>
                 <TouchableOpacity 
-                style={styles.backButton} 
-                onPress={closeSubpage}
-              >
-                <Ionicons name="arrow-back" size={24} color="white" />
-              </TouchableOpacity>
-
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-              >
-    
-                <View style={styles.imageContainer} collapsable={false}>
-                  <ImageViewer 
-                    
-                    selectedImage={item.image} 
-                    style={{ height: '100%', width: '100%' }} 
-                    height={height /2}
-                  />
-                </View>
-
-                <ScrollView 
-                  horizontal={true} 
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.categoriesContainer}
+                  style={styles.backButton} 
+                  onPress={closeSubpage}
                 >
-                  {clothing && Object.keys(clothing).map((key, index) => (
-                    <CategoryButton 
-                      key={index} 
-                      label={key} 
-                      onPress={() => setCategory(key)}
-                      active={category === key}
+                  <Ionicons name="arrow-back" size={24} color="white" />
+                </TouchableOpacity>
+
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                >
+                  <View style={styles.imageContainer} collapsable={false}>
+                    <ImageViewer 
+                      selectedImage={item.image} 
+                      style={{ height: '100%', width: '100%' }} 
+                      height={height /2}
                     />
-                  ))}
+                  </View>
+
+                  <ScrollView 
+                    horizontal={true} 
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.categoriesContainer}
+                  >
+                    {clothing && Object.keys(clothing).map((key, index) => (
+                      <CategoryButton 
+                        key={index} 
+                        label={key} 
+                        onPress={() => handleCategoryPress(key)}
+                        active={category === key}
+                      />
+                    ))}
+                  </ScrollView>
+                  <View style={styles.gridContainer}>
+                    <HomeGrid 
+                      clothing={clothing[category][0]} 
+                      onItemClick={handleClothingItemClick}
+                    />
+                  </View>
                 </ScrollView>
-                <View style={styles.gridContainer}>
-                  <HomeGrid clothing={clothing[category][0]} />
-                </View>
-              </ScrollView>
-
               </SafeAreaView>
-
-              {/* <FlatList
-                data={clothing && clothing[category] ? clothing[category][0] : []}
-                renderItem={renderItem}
-                keyExtractor={item => item.id}
-                numColumns={2}
-                style={styles.gridContainer}
-              /> */}
             </Animated.View>
           </View>
         </Portal>

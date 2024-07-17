@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, Linking } from 'react-native';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import { Button } from 'react-native-elements';
-import { SurveyScreen } from './Auth/Survey'; // Make sure this path is correct
+import { SurveyScreen } from './Auth/Survey';
+import { track } from '@amplitude/analytics-react-native';
 
 export default function ProfileScreen() {
   const { user } = useUser();
@@ -11,6 +12,7 @@ export default function ProfileScreen() {
   const [showSurvey, setShowSurvey] = useState(false);
 
   const handleDeleteAccount = () => {
+    track('delete_account_initiated', { userId: user.id });
     Alert.alert(
       "Delete Account",
       "Are you sure you want to delete your account? This action cannot be undone.",
@@ -26,6 +28,7 @@ export default function ProfileScreen() {
   };
 
   const confirmDeleteAccount = () => {
+    track('delete_account_confirmed', { userId: user.id });
     Alert.alert(
       "Confirm Deletion",
       "Please confirm once more that you want to permanently delete your account.",
@@ -44,9 +47,11 @@ export default function ProfileScreen() {
     setIsDeleting(true);
     try {
       await user.delete();
+      track('account_deleted', { userId: user.id });
       await signOut();
     } catch (error) {
       console.error("Error deleting account:", error);
+      track('delete_account_error', { userId: user.id, error: error.message });
       Alert.alert("Error", "Failed to delete account. Please try again.");
     } finally {
       setIsDeleting(false);
@@ -54,16 +59,32 @@ export default function ProfileScreen() {
   };
 
   const openLink = (url) => {
-    Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+    track('legal_link_opened', { userId: user.id, url });
+    Linking.openURL(url).catch((err) => {
+      console.error('An error occurred', err);
+      track('legal_link_error', { userId: user.id, url, error: err.message });
+    });
   };
 
   const handleEditPreferences = () => {
-    setShowSurvey(true);
+    try {
+      track('edit_preferences_click', { userId: user.id });
+      setShowSurvey(true);
+    } catch (error) {
+      track('edit_preferences_error', { userId: user.id, error: error.message });
+      Alert.alert("Error", "Failed to open preferences. Please try again.");
+    }
   };
 
   const handleSurveyComplete = () => {
     setShowSurvey(false);
+    track('edit_preferences_complete', { userId: user.id });
     // You might want to refresh the user data here
+  };
+
+  const handleSignOut = () => {
+    track('sign_out_click', { userId: user.id });
+    signOut();
   };
 
   if (showSurvey) {
@@ -83,7 +104,7 @@ export default function ProfileScreen() {
         />
         <Button
           title="Sign Out"
-          onPress={signOut}
+          onPress={handleSignOut}
           buttonStyle={styles.signOutButton}
           titleStyle={styles.buttonText}
           containerStyle={styles.buttonContainer}

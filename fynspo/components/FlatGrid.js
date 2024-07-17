@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Image, Pressable, TouchableOpacity} from 'react-native';
 import { FlatGrid, SectionGrid, SimpleGrid } from 'react-native-super-grid';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import OutfitItem from './OutfitItem';
 import ProductItem from './ProductItem';
+import { trackEvent } from "@aptabase/react-native";
 
 export default function Example() {
   const [items, setItems] = React.useState([
@@ -84,10 +85,17 @@ export function SuperGridExample({ clothing }) {
   );
 }
 
-export function FeedGrid({ clothing }) {
+export function FeedGrid({ clothing, onOutfitClick }) {
   const handleBuy = (item) => {
     // Implement your buy logic here
     console.log('Buying item:', item);
+    // Track the buy action
+    onOutfitClick(item.id, 'buy');
+  };
+
+  const handleItemClick = (item) => {
+    // Track the item click
+    onOutfitClick(item.id, 'view');
   };
   return (
     <SimpleGrid
@@ -103,7 +111,7 @@ export function FeedGrid({ clothing }) {
   );
 }
 
-export function HomeGrid({ clothing }) {
+export function HomeGrid({ clothing, onItemClick }) {
   const handleBuy = (item) => {
     // Implement your buy logic here
     console.log('Buying item:', item);
@@ -113,10 +121,12 @@ export function HomeGrid({ clothing }) {
       itemDimension={150}
       data={clothing}
       spacing={10}
-      renderItem={({ item }) => (     
-        <View style={styles.itemContainer}>
-            <ProductItem item={item} onBuy={handleBuy} id={item.id} view={"main"}/>
-        </View>
+      renderItem={({ item }) => (
+        <TouchableOpacity onPress={() => onItemClick(item)}>     
+          <View style={styles.itemContainer}>
+              <ProductItem item={item} onBuy={handleBuy} id={item.id} view={"main"}/>
+          </View>
+        </TouchableOpacity>
       )}
     />
   );

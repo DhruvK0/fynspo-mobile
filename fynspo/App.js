@@ -10,7 +10,6 @@ import { init } from '@amplitude/analytics-react-native';
 import * as amplitude from '@amplitude/analytics-react-native';
 
 init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY);
-amplitude.track('Sign Up');
 
 const tokenCache = {
   async getToken(key) {

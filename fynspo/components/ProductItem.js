@@ -2,15 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Image, Pressable, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, PanResponder, Linking, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Portal } from '@gorhom/portal';
-import { SimpleGrid } from 'react-native-super-grid';
 import * as WebBrowser from 'expo-web-browser';
 import { HomeGrid } from './FlatGrid';
-import Home from './Home';
 import { getSimilarItems } from './GetRequests';
+import { track } from '@amplitude/analytics-react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const ProductItem = ({ item, onBuy, depth = 0, id, view}) => {
+const ProductItem = ({ item, onBuy, depth = 0, id, view }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [visibleItems, setVisibleItems] = useState([]);
   const [hiddenItems, setHiddenItems] = useState([]);
@@ -19,10 +18,8 @@ const ProductItem = ({ item, onBuy, depth = 0, id, view}) => {
   const slideAnim = useRef(new Animated.Value(width)).current;
 
   useEffect(() => {
-    // Fetch similar items based on the clicked image
     const fetchSimilarItems = async () => {
       try {
-        // Dummy data for similar items with provided image links
         const result = await getSimilarItems(id, view, 20);
         setVisibleItems(result);
         setLoading(false);
@@ -82,38 +79,43 @@ const ProductItem = ({ item, onBuy, depth = 0, id, view}) => {
   }, [isOpen]);
 
   const handleBuyNow = () => {
-    Linking.openURL(item.product_link);
+    track('buy_button_click', { 
+      itemId: item.id, 
+      itemImage: item.image,
+      itemName: item.name,
+      itemPrice: item.price
+    });
+    WebBrowser.openBrowserAsync(item.product_link);
+  };
+
+  const handleGridItemClick = (gridItem) => {
+    track('grid_item_click', {
+      parentItemId: item.id,
+      parentItemImage: item.image,
+      gridItemId: gridItem.id,
+      gridItemImage: gridItem.image,
+      gridItemName: gridItem.name
+    });
+    setSelectedItem(gridItem);
+    openSubpage();
   };
 
   const handleRemoveItem = async (itemId) => {
     try {
-      // Simulate an API call to update the remove count for the item
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Find the index of the removed item in visibleItems
       const removedItemIndex = visibleItems.findIndex((item) => item.id === itemId);
 
       if (removedItemIndex !== -1) {
-        // Create a new array with the removed item replaced by a hidden item
         const updatedVisibleItems = [...visibleItems];
         const replacementItem = hiddenItems[0];
         updatedVisibleItems[removedItemIndex] = replacementItem;
-
-        // Update the visibleItems and hiddenItems state
         setVisibleItems(updatedVisibleItems);
-
-        // Move the first item in hiddenItems to the end of the array
         const updatedHiddenItems = [...hiddenItems.slice(1), hiddenItems[0]];
         setHiddenItems(updatedHiddenItems);
       }
     } catch (error) {
       console.error('Error removing item:', error);
     }
-  };
-
-  const handleItemPress = (item) => {
-    setSelectedItem(item);
-    openSubpage();
   };
 
   return (
@@ -138,14 +140,14 @@ const ProductItem = ({ item, onBuy, depth = 0, id, view}) => {
                   <ProductItem item={selectedItem} depth={depth + 1} />
                 ) : (
                   <>
-                  <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(item.product_link)}>
-                    <Image source={{ uri: item.image }} style={styles.modalImage} />
-                  </TouchableOpacity>
+                    <TouchableOpacity onPress={handleBuyNow}>
+                      <Image source={{ uri: item.image }} style={styles.modalImage} />
+                    </TouchableOpacity>
                     <Text style={styles.productName}>{item.name}</Text>
                     <Text style={styles.priceText}>${item.price}</Text>
                     <TouchableOpacity
                       style={styles.buyButton}
-                      onPress={() => WebBrowser.openBrowserAsync(item.product_link)}
+                      onPress={handleBuyNow}
                     >
                       <Text style={styles.buyButtonText}>Buy Now</Text>
                     </TouchableOpacity>
@@ -157,7 +159,7 @@ const ProductItem = ({ item, onBuy, depth = 0, id, view}) => {
                 </View> : 
                 <View style={styles.scrollTitle}>
                   <Text style={styles.similarItemsTitle}>Similar Styled Items</Text>
-                  <HomeGrid clothing={visibleItems} />
+                  <HomeGrid clothing={visibleItems} onItemClick={handleGridItemClick} />
                 </View>
                 }
               </ScrollView>

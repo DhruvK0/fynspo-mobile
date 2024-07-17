@@ -8,13 +8,27 @@ import { useUser } from '@clerk/clerk-expo'
 import { trackEvent } from "@aptabase/react-native";
 import { track } from '@amplitude/analytics-react-native';
 
+
 export default function Feed() {
     const [category, setCategory] = useState(null);
     const [trends, setTrends] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [trendContent, setTrendContent] = useState({});
     const [count, setCount] = useState(0);
+    const [categoryStartTime, setCategoryStartTime] = useState(null);
     const { user } = useUser();
+
+    const logCategoryTime = (previousCategory) => {
+        if (categoryStartTime && previousCategory) {
+            const timeSpent = (Date.now() - categoryStartTime) / 1000; // Convert to seconds
+            track("category_time_spent", { category: previousCategory, timeSpent });
+        }
+        setCategoryStartTime(Date.now());
+    };
+
+    const handleOutfitClick = (outfitId, action) => {
+        track("outfit_interaction", { category, outfitId, action });
+    };
 
     const increment = () => {
         setCount(count + 1);
@@ -33,6 +47,7 @@ export default function Feed() {
                 setTrendContent({ [trendData[0]]: trendInfo });
                 // console.log(trendInfo)
                 setIsLoading(false)
+                setCategoryStartTime(Date.now())
 
                 await Promise.all(trendData.slice(1).map(async (trend) => {
                     const trendInfo = await getTrends(trend);
@@ -81,6 +96,7 @@ export default function Feed() {
                                 key={index} 
                                 label={trend} // Use the category property directly from the trend object
                                 onPress={() => {
+                                    logCategoryTime(category);
                                     setCategory(trend)
                                     increment()
                                 }}
@@ -94,7 +110,7 @@ export default function Feed() {
                         </View>
                     ) : (
                         <ScrollView showsVerticalScrollIndicator={false} style={styles.gridContainer}>
-                            <FeedGrid clothing={trendContent[category]} />
+                            <FeedGrid clothing={trendContent[category]} onOutfitClick={handleOutfitClick}/>
                         </ScrollView>
                     )}
                 </View>
