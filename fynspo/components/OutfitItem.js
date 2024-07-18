@@ -21,11 +21,23 @@ const OutfitItem = ({ item, onBuy }) => {
   const [clothingItemClickCounts, setClothingItemClickCounts] = useState({});
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  // useEffect(() => {
+  //   if (clothing) {
+  //     setCategory(Object.keys(clothing)[0]);
+  //   }
+  // }, [clothing]);
+
   useEffect(() => {
-    if (clothing) {
-      setCategory(Object.keys(clothing)[0]);
+  if (clothing) {
+    const firstNonEmptyCategory = Object.keys(clothing).find(key => 
+      clothing[key].some(innerList => innerList.length > 0)
+    );
+    
+    if (firstNonEmptyCategory) {
+      setCategory(firstNonEmptyCategory);
     }
-  }, [clothing]);
+  }
+}, [clothing]);
 
   useEffect(() => {
     FastImage.preload([{uri: item.image, priority: FastImage.priority.high}]);
@@ -170,12 +182,14 @@ const OutfitItem = ({ item, onBuy }) => {
                     style={styles.categoriesContainer}
                   >
                     {clothing && Object.keys(clothing).map((key, index) => (
-                      <CategoryButton 
-                        key={index} 
-                        label={key} 
-                        onPress={() => handleCategoryPress(key)}
-                        active={category === key}
-                      />
+                       clothing[key].some(innerList => innerList.length > 0) ? (
+                          <CategoryButton 
+                            key={index} 
+                            label={key} 
+                            onPress={() => handleCategoryPress(key)}
+                            active={category === key}
+                          />
+                        ) : null
                     ))}
                   </ScrollView>
                   <View style={styles.gridContainer}>

@@ -50,8 +50,13 @@ export async function makeApiCall(image_string, metadata) {
     
     try {
       const response = await fetch("https://al9bgznmmj.execute-api.us-east-1.amazonaws.com/fynspo", requestOptions);
-      const result = await response.json();
+      var result = await response.json();
       // console.log(result);
+      for (let key in result) {
+        if (!Array.isArray(result[key]) || result[key].length === 0 || !result[key].some(innerArray => innerArray.length > 0)) {
+          delete result[key];
+        }
+      }
       return result;
     } catch (error) {
       // console.error(error);
@@ -80,7 +85,7 @@ export async function getSimilarItems(id, view, item_count = 20) {
   }
 }
 
-export async function getTrends(trend, limit = "40") {
+export async function getTrends(trend, limit = "15") {
   const requestOptions = {
     method: "GET",
     redirect: "follow"
