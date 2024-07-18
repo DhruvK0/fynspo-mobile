@@ -2,7 +2,6 @@ import { StyleSheet } from 'react-native';
 import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ClerkProvider } from "@clerk/clerk-expo";
-import Constants from "expo-constants"
 import * as SecureStore from "expo-secure-store";
 import MainFlow from './components/MainFlow';
 import * as ScreenOrientation from 'expo-screen-orientation';

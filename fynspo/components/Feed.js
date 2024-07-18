@@ -19,7 +19,7 @@ export default function Feed() {
     const [categoryStartTime, setCategoryStartTime] = useState(null);
     const { user } = useUser();
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [loadingCategories, setLoadingCategories] = useState({});
+    const [categoryLoadingStates, setCategoryLoadingStates] = useState({});
     const scrollViewRef = useRef(null);
 
     const logCategoryTime = (previousCategory) => {
@@ -48,37 +48,45 @@ export default function Feed() {
                     ? await getSexTrends(user.unsafeMetadata.fashionPreference)
                     : await getSexTrends("F");
                 setTrends(trendData);
-                setCategory(trendData[0]);
-                const trendInfo = await getTrends(trendData[0]);
-                setTrendContent({ [trendData[0]]: trendInfo });
+                
+                // Set all categories to loading state
+                const initialLoadingState = trendData.reduce((acc, trend) => {
+                    acc[trend] = true;
+                    return acc;
+                }, {});
+                setCategoryLoadingStates(initialLoadingState);
+
+                // Fetch 20 items for the first trend
+                const firstTrend = trendData[0];
+                const firstTrendInfo = await getTrends(firstTrend, "20");
+                setTrendContent({ [firstTrend]: firstTrendInfo });
+                setCategoryLoadingStates(prev => ({...prev, [firstTrend]: false}));
+                setCategory(firstTrend);
                 setCategoryStartTime(Date.now());
+                setIsLoading(false);
 
-                const initialLoadingState = {};
-                trendData.forEach(trend => {
-                    initialLoadingState[trend] = trend !== trendData[0];
-                });
-                setLoadingCategories(initialLoadingState);
-
-                await Promise.all(trendData.slice(1).map(async (trend) => {
-                    const trendInfo = await getTrends(trend);
-                    setTrendContent((prevState) => ({
+                // Fetch 10 items for other trends
+                for (let i = 1; i < trendData.length; i++) {
+                    const trend = trendData[i];
+                    const trendInfo = await getTrends(trend, "10");
+                    setTrendContent(prevState => ({
                         ...prevState,
                         [trend]: trendInfo
                     }));
-                    setLoadingCategories(prev => ({...prev, [trend]: false}));
-                }));
+                    setCategoryLoadingStates(prev => ({...prev, [trend]: false}));
+                }
             } else if (newCategory) {
-                setLoadingCategories(prev => ({...prev, [newCategory]: true}));
-                const trendInfo = await getTrends(newCategory);
-                setTrendContent((prevState) => ({
+                setCategoryLoadingStates(prev => ({...prev, [newCategory]: true}));
+                const trendInfo = await getTrends(newCategory, "10");
+                setTrendContent(prevState => ({
                     ...prevState,
                     [newCategory]: trendInfo
                 }));
-                setLoadingCategories(prev => ({...prev, [newCategory]: false}));
+                setCategoryLoadingStates(prev => ({...prev, [newCategory]: false}));
             } else {
                 setIsLoadingMore(true);
-                const newTrendInfo = await getTrends(category);
-                setTrendContent((prevState) => ({
+                const newTrendInfo = await getTrends(category, "10");
+                setTrendContent(prevState => ({
                     ...prevState,
                     [category]: [...prevState[category], ...newTrendInfo]
                 }));
@@ -144,7 +152,7 @@ export default function Feed() {
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="#8400ff" />
                         </View>
-                    ) : loadingCategories[category] ? (
+                    ) : categoryLoadingStates[category] ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="#8400ff" />
                         </View>
@@ -181,7 +189,6 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingTop: 10,
-        // paddingHorizontal: 10,
     },
     categoriesContainer: {
         maxHeight: 50,
