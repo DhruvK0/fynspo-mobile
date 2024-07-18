@@ -14,7 +14,6 @@ import * as Camera from 'expo-camera';
 import { captureRef } from 'react-native-view-shot';
 import domtoimage from 'dom-to-image';
 import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-expo";
-import Constants from "expo-constants"
 import SignUpScreen from "./Auth/SignUpScreen";
 import SignInScreen from "./Auth/SignInScreen";
 import * as SecureStore from "expo-secure-store";
@@ -251,6 +250,7 @@ export default function Home() {
                       horizontal={true} 
                       showsHorizontalScrollIndicator={false}
                       style={styles.categoriesContainer}
+                      contentContainerStyle={styles.categoriesContentContainer}
                     >
                       {Object.keys(clothing).map((key, index) => (
                         <CategoryButton 
@@ -341,5 +341,10 @@ const styles = StyleSheet.create({
     loaderContainer: {
       justifyContent: 'center',
       paddingTop: 50,
+    },
+    categoriesContentContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexGrow: 1,
     },
 });
