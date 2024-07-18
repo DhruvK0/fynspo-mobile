@@ -17,6 +17,9 @@
       "distribution": "internal"
     },
     "production": {
+      "ios": {
+        "resourceClass": "medium"
+      }
     },
     "test": {
     }
