@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions, SafeAreaView, ActivityIndicator, Alert} from 'react-native';
+import { StyleSheet, Text, View, Platform, ScrollView, FlatList, Dimensions, SafeAreaView, ActivityIndicator, Alert, TouchableOpacity} from 'react-native';
 import ImageViewer from './ImageViewer';
 import Button from './Buttons/Button';
 import * as ImagePicker from 'expo-image-picker';
@@ -273,12 +273,12 @@ export default function Home() {
         ) : (
           <View style={[styles.container, showAppOptions]}>
             <View style={styles.optionsContainer}>
-              <View style={styles.imageContainer}>
+              <TouchableOpacity onPress={pickLibraryImageAsync} style={styles.imageContainer}>
                 <View ref={imageRef} collapsable={false}>
                   <ImageViewer placeholderImageSource={PlaceholderImage} selectedImage={selectedImage} style={showAppOptions && {  height: '100%', width: '100%' }} height={screenHeight / 2}/>
                   {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
                 </View>
-              </View>
+              </TouchableOpacity>
               <View>
                   <View style={styles.footerContainer}>
                     <View style={styles.buttonContainer}>
