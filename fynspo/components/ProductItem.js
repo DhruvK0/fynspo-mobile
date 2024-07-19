@@ -296,6 +296,7 @@ const ProductItem = ({ item, onBuy, depth = 0, id, view }) => {
   useEffect(() => {
     const fetchSimilarItems = async () => {
       try {
+        console.log("Fetching similar items for item", id);
         const result = await getSimilarItems(id, view, 20);
         setVisibleItems(result);
         setLoading(false);
