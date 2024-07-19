@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Platform, Image } from 'react-native'
+import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Platform, Image, KeyboardAvoidingView, ScrollView } from 'react-native'
 import { useUser, useClerk } from '@clerk/clerk-expo'
 import SignInScreen from './SignInScreen'
 import SignUpScreen from './SignUpScreen'
@@ -65,38 +65,43 @@ export default function AuthContainer() {
 
   if (!isSignedIn) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Image source={require('../../assets/fynspo_logo.jpg')} style={{width: 300, height: 75, marginBottom: 20, marginLeft: 0}} />
-        <View style={styles.card}>
-          {isSignUp ? <Text style={styles.title}>Sign Up</Text> : <Text style={styles.title}>Sign In</Text>}
-          <SignInWithOAuthGoogle signup={isSignUp} />
-          {(Platform.OS === 'ios') && 
-            <SignInWithOAuthApple signup={isSignUp} />
-          }
-          <View style={styles.divider}>
-            <View style={styles.line} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.line} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <Image source={require('../../assets/fynspo_logo.jpg')} style={styles.logo} />
+          <View style={styles.card}>
+            {isSignUp ? <Text style={styles.title}>Sign Up</Text> : <Text style={styles.title}>Sign In</Text>}
+            <SignInWithOAuthGoogle signup={isSignUp} />
+            {(Platform.OS === 'ios') && 
+              <SignInWithOAuthApple signup={isSignUp} />
+            }
+            <View style={styles.divider}>
+              <View style={styles.line} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.line} />
+            </View>
+            {isSignUp ? (
+              <SignUpScreen
+                onAccountExists={() => {
+                  Alert.alert('Account already exists', 'Please sign in instead.')
+                  setIsSignUp(false)
+                }}
+              />
+            ) : (
+              <SignInScreen />
+            )}
+            <View style={styles.authToggle}>
+              <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+                <Text style={styles.toggleText}>
+                  {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          {isSignUp ? (
-            <SignUpScreen
-              onAccountExists={() => {
-                Alert.alert('Account already exists', 'Please sign in instead.')
-                setIsSignUp(false)
-              }}
-            />
-          ) : (
-            <SignInScreen />
-          )}
-          <View style={styles.authToggle}>
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-              <Text style={styles.toggleText}>
-                {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     )
   }
 
@@ -127,13 +132,21 @@ export default function AuthContainer() {
   )
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'black',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
+    paddingVertical: 20,
+  },
+  logo: {
+    width: 300, 
+    height: 75, 
+    marginBottom: 20,
   },
   card: {
     backgroundColor: 'white',
@@ -148,10 +161,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    // marginBottom: 20,
+    marginBottom: 20,
   },
   divider: {
     flexDirection: 'row',

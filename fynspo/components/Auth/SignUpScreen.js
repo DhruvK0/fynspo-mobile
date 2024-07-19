@@ -35,6 +35,7 @@ export default function SignUpScreen() {
       setPendingVerification(true);
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
+      Alert.alert("Sign Up Error", err.errors ? err.errors[0].message : "An error occurred during sign up. Please try again.");
     }
   };
 
@@ -51,6 +52,7 @@ export default function SignUpScreen() {
       await setActive({ session: completeSignUp.createdSessionId });
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
+      Alert.alert("Verification Error", err.errors ? err.errors[0].message : "An error occurred during verification. Please try again.");
     }
   };
 
