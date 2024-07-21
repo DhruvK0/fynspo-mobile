@@ -34,7 +34,7 @@ export default function Home() {
     const [showAppOptions, setShowAppOptions] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [pickedEmoji, setPickedEmoji] = useState(null);
-    const [status, requestPermission] = MediaLibrary.usePermissions();
+    const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
     const [cameraPermission, requestCameraPermission] = Camera.useCameraPermissions();
     const [clothing, setClothing] = useState(null);
     const [category, setCategory] = useState("Select Category");
@@ -75,10 +75,18 @@ export default function Home() {
     }; 
     
     const pickCameraImageAsync = async () => {
+        if (!cameraPermission?.granted) {
+            const permission = await requestCameraPermission();
+            if (!permission.granted) {
+                Alert.alert("Permission Required", "Camera access is required to take photos. Please enable it in your phone's settings.");
+                return;
+            }
+        }
+
         let result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        quality: 0.2,
-        base64: true,
+          allowsEditing: true,
+          quality: 0.2,
+          base64: true,
         });
 
         if (!result.canceled) {
@@ -110,10 +118,18 @@ export default function Home() {
     };
 
     const pickLibraryImageAsync = async () => {
+        if (!mediaLibraryPermission?.granted) {
+            const permission = await requestMediaLibraryPermission();
+            if (!permission.granted) {
+                Alert.alert("Permission Required", "Media library access is required to choose photos. Please enable it in your phone's settings.");
+                return;
+            }
+        }
+
         let result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        quality: 0.2,
-        base64: true,
+          allowsEditing: true,
+          quality: 0.2,
+          base64: true,
         });
 
         if (!result.canceled) {
@@ -184,13 +200,6 @@ export default function Home() {
         setIsModalVisible(false);
     };
 
-    if (status === null) {
-        requestPermission();
-    }
-
-    if (cameraPermission === null) {
-        requestCameraPermission();
-    }
 
     return (
         <View style={{backgroundColor: '000'}}>
