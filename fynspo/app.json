@@ -20,7 +20,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.fynspo.app",
-      "buildNumber": "10"
+      "infoPlist": {
+        "NSCameraUsageDescription": "fynspo uses the camera to take pictures of outfits or clothes in order to find similar items.",
+        "NSPhotoLibraryAddUsageDescription": "fynspo uses the photo library to upload pictures of outfits or clothes in order to find similar items.",
+        "NSPhotoLibraryUsageDescription" : "fynspo uses the photo library to upload pictures of outfits or clothes in order to find similar items."
+      },
+      "buildNumber": "11"
     },
     "android": {
       "package": "com.fynspo.app",
@@ -34,7 +39,20 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+      "expo-media-library",
+      {
+        "photosPermission": "fynspo uses the photo library to upload pictures of outfits or clothes in order to find similar items.",
+        "savePhotosPermission": "fynspo uses the photo library to save pictures of outfits or clothes for user's to view later."
+      }
+    ],
+    [
+      "expo-camera",
+      {
+        "cameraPermission": "fynspo uses the camera to take pictures of outfits or clothes in order to find similar items."
+      }
+    ]
     ]
   }
 }
