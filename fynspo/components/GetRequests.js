@@ -64,14 +64,14 @@ export async function makeApiCall(image_string, metadata) {
     }
   }
 
-export async function getSimilarItems(id, view, item_count = 20, sex, price_low, price_high) {
+export async function getSimilarItems(id, view, item_count = 20, sex = 'B', price_low = 0, price_high = 200) {
   const formdata = new FormData();
   formdata.append("view", view);
   formdata.append("ID", id.toString());
   formdata.append("item_count", item_count.toString());
   formdata.append("sex", sex);
-  formdata.append("price_high", price_high);
-  formdata.append("price_low", price_low);
+  formdata.append("price_high", price_high.toString());
+  formdata.append("price_low", price_low.toString());
 
 
   const requestOptions = {
