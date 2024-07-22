@@ -282,6 +282,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { HomeGrid } from './FlatGrid';
 import { getSimilarItems } from './GetRequests';
 import { track } from '@amplitude/analytics-react-native';
+import { useUser } from "@clerk/clerk-expo";
 
 const { width, height } = Dimensions.get('window');
 
@@ -292,12 +293,13 @@ const ProductItem = ({ item, onBuy, depth = 0, id, view }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const slideAnim = useRef(new Animated.Value(width)).current;
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchSimilarItems = async () => {
       try {
         console.log("Fetching similar items for item", id);
-        const result = await getSimilarItems(id, view, 20);
+        const result = await getSimilarItems(id, view, 20, user.unsafeMetadata.fashionPreference, user.unsafeMetadata.priceRange[0], user.unsafeMetadata.priceRange[1]);
         setVisibleItems(result);
         setLoading(false);
       } catch (error) {

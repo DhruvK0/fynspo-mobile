@@ -64,11 +64,14 @@ export async function makeApiCall(image_string, metadata) {
     }
   }
 
-export async function getSimilarItems(id, view, item_count = 20) {
+export async function getSimilarItems(id, view, item_count = 20, sex, price_low, price_high) {
   const formdata = new FormData();
   formdata.append("view", view);
   formdata.append("ID", id.toString());
   formdata.append("item_count", item_count.toString());
+  formdata.append("sex", sex);
+  formdata.append("price_high", price_high);
+  formdata.append("price_low", price_low);
 
 
   const requestOptions = {
@@ -79,7 +82,22 @@ export async function getSimilarItems(id, view, item_count = 20) {
   try {
     const response = await fetch("https://al9bgznmmj.execute-api.us-east-1.amazonaws.com/similar_items", requestOptions)
     const result = await response.json();
-    return result;
+
+    const filteredResult = await Promise.all(result.map(async (item) => {
+      try {
+        const imgResponse = await fetch(item.image);
+        return imgResponse.ok ? item : null;
+      } catch (error) {
+        console.error(`Error checking image for item ${item.id}:`, error);
+        return null;
+      }
+    }));
+
+    // Remove null values (items with broken image links)
+    const validItems = filteredResult.filter(item => item !== null);
+
+    return validItems;
+    // return result;
   } catch (error) {
     throw error;
   }
