@@ -12,6 +12,7 @@ import ProfileScreen from './Profile';
 import AuthContainer from './Auth/AuthContainer';
 import { SurveyScreen } from './Auth/Survey';
 import SvgComponent from './NavBarIcons';
+import TikTokStyleComponent from './Pages/Shopping';
 
 const Tab = createBottomTabNavigator();
 
@@ -81,7 +82,7 @@ export default function MainFlow() {
               <Tab.Screen name="Home">
                 {(props) => (
                   <TrackedScreen route={props.route}>
-                    <Feed {...props} />
+                    <TikTokStyleComponent {...props} />
                   </TrackedScreen>
                 )}
               </Tab.Screen>
