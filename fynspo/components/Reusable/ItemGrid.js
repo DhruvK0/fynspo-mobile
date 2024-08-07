@@ -1,18 +1,17 @@
-// ItemGrid.js
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import ItemComponent from './Item'; // Assuming you have this component
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const COLUMN_WIDTH = width / 2 - 15; // Subtracting padding
 
 const ItemGrid = ({ fetchItems }) => {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadItems = async () => {
-    if (loading) return;
+    if (loading && page !== 1) return;
     setLoading(true);
     try {
       const newItems = await fetchItems(page);
@@ -29,28 +28,44 @@ const ItemGrid = ({ fetchItems }) => {
     loadItems();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <ItemComponent
-      {...item}
-      style={{ width: COLUMN_WIDTH, marginBottom: 10 }}
-    />
-  );
-
-  const handleEndReached = () => {
-    loadItems();
+  const handleScroll = (event) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 20;
+    if (layoutMeasurement.height + contentOffset.y >=
+        contentSize.height - paddingToBottom) {
+      loadItems();
+    }
   };
 
+  if (loading && items.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#8400ff" />
+      </View>
+    );
+  }
+
   return (
-    <FlatList
-      data={items}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
-      numColumns={2}
-      columnWrapperStyle={styles.columnWrapper}
-      onEndReached={handleEndReached}
-      onEndReachedThreshold={0.25}
+    <ScrollView
       contentContainerStyle={styles.container}
-    />
+      onScroll={handleScroll}
+      scrollEventThrottle={400}
+    >
+      <View style={styles.grid}>
+        {items.map((item) => (
+          <ItemComponent
+            key={item.id.toString()}
+            {...item}
+            style={{ width: COLUMN_WIDTH, marginBottom: 10 }}
+          />
+        ))}
+      </View>
+      {loading && (
+        <View style={styles.loadingMore}>
+          <ActivityIndicator size="small" color="#8400ff" />
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
@@ -59,8 +74,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
   },
-  columnWrapper: {
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: height / 1.5,
+  },
+  loadingMore: {
+    // paddingVertical: 10,
+    alignItems: 'center',
   },
 });
 
