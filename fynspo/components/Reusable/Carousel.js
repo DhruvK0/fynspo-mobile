@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   carouselWrapper: {
     position: 'relative',
-    height: ITEM_WIDTH * 2, // Adjust this value based on your item height
+    height: ITEM_WIDTH * 2.2, // Adjust this value based on your item height
   },
   carouselTitle: {
     fontSize: 20,
@@ -126,3 +126,5 @@ const styles = StyleSheet.create({
 });
 
 export default CarouselComponent;
+
+
