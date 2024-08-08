@@ -299,7 +299,7 @@ import { saveItemState, getItemState } from '../../utils/storage';
 const { width, height } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
 
-const ItemComponent = ({ id, image, brand, name, price, style }) => {
+const ItemComponent = ({ id, image, brand, name, price, category, style }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInBag, setIsInBag] = useState(false);
@@ -373,14 +373,14 @@ const ItemComponent = ({ id, image, brand, name, price, style }) => {
     event.stopPropagation();
     const newFavoriteState = !isFavorite;
     setIsFavorite(newFavoriteState);
-    await saveItemState(id, newFavoriteState, isInBag);
+    await saveItemState(id, newFavoriteState, isInBag, category);
   };
 
   const toggleBag = async (event) => {
     event.stopPropagation();
     const newBagState = !isInBag;
     setIsInBag(newBagState);
-    await saveItemState(id, isFavorite, newBagState);
+    await saveItemState(id, isFavorite, newBagState, category);
   };
 
   const ItemDetails = () => (
@@ -395,6 +395,7 @@ const ItemComponent = ({ id, image, brand, name, price, style }) => {
             <Text style={styles.modalBrandText}>{brand}</Text>
             <Text style={styles.modalNameText}>{name}</Text>
             <Text style={styles.modalPriceText}>${price}</Text>
+            <Text style={styles.modalCategoryText}>Category: {category}</Text>
           </View>
         </ScrollView>
         <TouchableOpacity style={styles.backButton} onPress={toggleModal}>
@@ -425,7 +426,7 @@ const ItemComponent = ({ id, image, brand, name, price, style }) => {
           <Text style={styles.priceText}>${price}</Text>
           <TouchableOpacity style={styles.cartButton} onPress={toggleBag}>
             <Ionicons 
-              name={isInBag ? "bag-check" : "bag-check-outline"} 
+              name={isInBag ? "bag-check" : "bag-add-outline"} 
               size={24} 
               color={isInBag ? "#8400ff" : "black"} 
             />
@@ -546,7 +547,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  // Removed addToCartButton and addToCartText styles
+  modalCategoryText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 10,
+  },
 });
 
 export default ItemComponent;
