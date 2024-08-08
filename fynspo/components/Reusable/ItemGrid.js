@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
-import ItemComponent from './Item'; // Assuming you have this component
+import { View, ScrollView, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import ItemComponent from './Item';
 
 const { width, height } = Dimensions.get('window');
-const COLUMN_WIDTH = width / 2 - 15; // Subtracting padding
+const COLUMN_WIDTH = width / 2 - 15;
 
-const ItemGrid = ({ fetchItems }) => {
+const ItemGrid = ({ fetchItems, onRemoveItem, isCartView = false }) => {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,6 @@ const ItemGrid = ({ fetchItems }) => {
     setLoading(true);
     try {
       const newItems = await fetchItems(page);
-      // Add a unique key to each item
       const itemsWithKeys = newItems.map(item => ({
         ...item,
         uniqueKey: item.id ? `${item.id}-${Math.random().toString(36).substr(2, 9)}` : Math.random().toString(36).substr(2, 9)
@@ -42,6 +41,11 @@ const ItemGrid = ({ fetchItems }) => {
     }
   };
 
+  const handleRemoveItem = (itemId) => {
+    onRemoveItem(itemId);
+    setItems((prevItems) => prevItems.filter(item => item.id !== itemId));
+  };
+
   if (loading && items.length === 0) {
     return (
       <View style={styles.loadingContainer}>
@@ -58,11 +62,20 @@ const ItemGrid = ({ fetchItems }) => {
     >
       <View style={styles.grid}>
         {items.map((item) => (
-          <ItemComponent
-            key={item.uniqueKey}
-            {...item}
-            style={{ width: COLUMN_WIDTH, marginBottom: 10 }}
-          />
+          <View key={item.uniqueKey} style={styles.itemContainer}>
+            <ItemComponent
+              {...item}
+              style={{ width: COLUMN_WIDTH, marginBottom: 10 }}
+            />
+            {isCartView && (
+              <TouchableOpacity 
+                style={styles.removeButton} 
+                onPress={() => handleRemoveItem(item.id)}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         ))}
       </View>
       {loading && (
@@ -92,6 +105,20 @@ const styles = StyleSheet.create({
   },
   loadingMore: {
     alignItems: 'center',
+  },
+  itemContainer: {
+    marginBottom: 20,
+  },
+  removeButton: {
+    backgroundColor: '#ff4d4d',
+    padding: 8,
+    borderRadius: 5,
+    marginTop: 5,
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 
