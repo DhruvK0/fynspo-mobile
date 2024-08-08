@@ -1,23 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Dimensions, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
+import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, useAnimatedGestureHandler } from 'react-native-reanimated';
+import { AntDesign } from '@expo/vector-icons'; // Import the icon set
 import ItemComponent from './Item';
+import ItemGrid from './ItemGrid';
 
 const { width: screenWidth } = Dimensions.get('window');
-const ITEM_WIDTH = screenWidth * 0.4; // 40% of screen width
+const ITEM_WIDTH = screenWidth * 0.4;
 const ITEM_MARGIN = 10;
-const VISIBLE_ITEMS = 2.5; // Show 2 full items and half of the third
+const VISIBLE_ITEMS = 2.5;
 
 const CarouselComponent = ({ title, fetchItems }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [showAllItems, setShowAllItems] = useState(false);
+  const translateX = useSharedValue(screenWidth);
 
   const loadItems = useCallback(async () => {
     if (loading) return;
     setLoading(true);
     try {
       const newItems = await fetchItems(page);
-      setItems(prevItems => [...prevItems, ...newItems]);
+      const itemsWithIds = newItems.map(item => ({
+        ...item,
+        uniqueId: item.id || Math.random().toString(36).substr(2, 9)
+      }));
+      setItems(prevItems => [...prevItems, ...itemsWithIds]);
       setPage(prevPage => prevPage + 1);
     } catch (error) {
       console.error('Error loading items:', error);
@@ -57,25 +67,84 @@ const CarouselComponent = ({ title, fetchItems }) => {
     }
   };
 
+  const handleViewMore = () => {
+    setShowAllItems(true);
+    translateX.value = withTiming(0, { duration: 300 });
+  };
+
+  const handleClose = () => {
+    translateX.value = withTiming(screenWidth, { duration: 300 }, () => {
+      runOnJS(setShowAllItems)(false);
+    });
+  };
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, context) => {
+      context.startX = translateX.value;
+    },
+    onActive: (event, context) => {
+      translateX.value = Math.max(context.startX + event.translationX, 0);
+    },
+    onEnd: (event) => {
+      if (event.translationX > screenWidth / 3) {
+        runOnJS(handleClose)();
+      } else {
+        translateX.value = withTiming(0);
+      }
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    };
+  });
+
   return (
     <View style={styles.carouselContainer}>
-      <Text style={styles.carouselTitle}>{title}</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.carouselTitle}>{title}</Text>
+        <TouchableOpacity onPress={handleViewMore} style={styles.viewMoreButton}>
+          <Text style={styles.viewMoreText}>View More</Text>
+          <Text style={styles.arrowRight}>→</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.carouselWrapper}>
         <FlatList
           data={items}
           renderItem={renderItem}
-          keyExtractor={(item, index) => `${item.id}-${index}`}
+          keyExtractor={item => item.uniqueId}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.carouselContent}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.75}
           ListFooterComponent={renderFooter}
-        //   snapToInterval={ITEM_WIDTH + ITEM_MARGIN * 2}
-        //   decelerationRate="slow"
-        //   snapToAlignment="start"
         />
       </View>
+      <Modal
+        visible={showAllItems}
+        animationType="none"
+        transparent={true}
+        onRequestClose={handleClose}
+      >
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <PanGestureHandler onGestureEvent={gestureHandler}>
+            <Animated.View style={[styles.modalContainer, animatedStyle]}>
+              <SafeAreaView style={{ flex: 1 }}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={handleClose} style={styles.backButton}>
+                    <AntDesign name="arrowleft" size={24} color="#fff" />
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>{title}</Text>
+                  <View style={styles.placeholder} />
+                </View>
+                <ItemGrid fetchItems={fetchItems} />
+              </SafeAreaView>
+            </Animated.View>
+          </PanGestureHandler>
+        </GestureHandlerRootView>
+      </Modal>
     </View>
   );
 };
@@ -84,16 +153,35 @@ const styles = StyleSheet.create({
   carouselContainer: {
     marginBottom: 20,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingHorizontal: 15,
+  },
   carouselWrapper: {
     position: 'relative',
-    height: ITEM_WIDTH * 2.2, // Adjust this value based on your item height
+    height: ITEM_WIDTH * 2.2,
   },
   carouselTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 10,
-    marginLeft: 15,
     color: '#fff',
+  },
+  viewMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewMoreText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  arrowRight: {
+    color: '#fff',
+    fontSize: 15,
+    marginLeft: 5,
   },
   carouselContent: {
     paddingHorizontal: screenWidth * (1 - VISIBLE_ITEMS * 0.4) / 2 - ITEM_MARGIN,
@@ -113,18 +201,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  centralLoaderContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  modalHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'space-between',
+    padding: 15,
+  },
+  backButton: {
+    padding: 5,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1,
+    marginBottom: 3
+  },
+  placeholder: {
+    width: 24,  // Match the width of the back button icon
   },
 });
 
 export default CarouselComponent;
-
-

@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, SafeA
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ForYouPage from '../Subcomponents/ForYou';
+import CollectionsView from '../Subcomponents/Collections';
+import ItemGrid from '../Reusable/ItemGrid';
 
 const { width, height } = Dimensions.get('window');
 
@@ -131,12 +133,25 @@ const TikTokStyleComponent = () => {
       case 'For You':
         return <ForYouPage />;
       case 'Saved':
-        return <Text style={styles.contentText}>Saved Content</Text>;
+        return <ItemGrid fetchItems={fetchSavedItems} />;
       case 'Collections':
-        return <Text style={styles.contentText}>Collections Content</Text>;
+        return <CollectionsView />;
       default:
         return null;
     }
+  };
+
+  const fetchSavedItems = async (page) => {
+    // Implement your API call here
+    // This is a placeholder implementation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return Array.from({ length: 10 }, (_, i) => ({
+      id: `${page}-${i}`,
+      image: 'https://example.com/image.jpg',
+      brand: `Brand ${page}-${i}`,
+      name: `Item ${page}-${i}`,
+      price: Math.floor(Math.random() * 100) + 20,
+    }));
   };
 
   const handleSearch = () => {
@@ -271,7 +286,7 @@ const TikTokStyleComponent = () => {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={openFilter} style={styles.iconButton}>
-            <Ionicons name="filter" size={24} color="#fff" />
+            <Ionicons name="menu" size={24} color="#fff" />
           </TouchableOpacity>
           <View style={styles.tabContainer}>
             {tabs.map((tab) => (
