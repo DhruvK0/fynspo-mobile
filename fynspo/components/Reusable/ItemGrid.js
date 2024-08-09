@@ -64,8 +64,8 @@ const ItemGrid = ({ fetchItems, onRemoveItem, isCartView = false }) => {
         {items.map((item) => (
           <View key={item.uniqueKey} style={styles.itemContainer}>
             <ItemComponent
-              {...item}
-              style={{ width: COLUMN_WIDTH, marginBottom: 10 }}
+              item={{...item, style: { width: COLUMN_WIDTH, marginBottom: 10 }}}
+              style={{ width: COLUMN_WIDTH}}
             />
             {isCartView && (
               <TouchableOpacity 
