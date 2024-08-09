@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ForYouPage from '../Subcomponents/ForYou';
 import CollectionsView from '../Subcomponents/Collections';
 import ItemGrid from '../Reusable/ItemGrid';
+import SavedPage from '../Subcomponents/Saved';
 
 const { width, height } = Dimensions.get('window');
 
@@ -133,7 +134,7 @@ const TikTokStyleComponent = () => {
       case 'For You':
         return <ForYouPage />;
       case 'Saved':
-        return <ItemGrid fetchItems={fetchSavedItems} />;
+        return <SavedPage />;
       case 'Collections':
         return <CollectionsView />;
       default:
