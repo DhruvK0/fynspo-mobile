@@ -5,61 +5,79 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const FAVORITES_KEY = '@favorites';
 const CART_KEY = '@cart';
 const CATEGORIES_KEY = '@categories';
+const FAVORITES_OBJECT_KEY = '@favorites_object';
+const CART_OBJECT_KEY = '@cart_object';
+
 
 let listeners = [];
 
-export const saveItemState = async (itemId, isFavorite, isInCart, category) => {
+export const saveItemState = async (item, isFavorite, isInCart) => {
   try {
     const favorites = await AsyncStorage.getItem(FAVORITES_KEY);
     const cart = await AsyncStorage.getItem(CART_KEY);
     const categories = await AsyncStorage.getItem(CATEGORIES_KEY);
+    const favoritesObject = await AsyncStorage.getItem(FAVORITES_OBJECT_KEY);
+    const cartObject = await AsyncStorage.getItem(CART_OBJECT_KEY);
 
     let favoritesArray = favorites ? JSON.parse(favorites) : [];
     let cartArray = cart ? JSON.parse(cart) : [];
+    let favoritesObjects = favoritesObject ? JSON.parse(favoritesObject) : {};
+    let cartObjects = cartObject ? JSON.parse(cartObject) : {};
     let categoriesObject = categories ? JSON.parse(categories) : {};
 
     if (isFavorite) {
-      if (!favoritesArray.includes(itemId)) {
-        favoritesArray.push(itemId);
+      if (!favoritesArray.includes(item.id)) {
+        favoritesArray.push(item.id);
+        favoritesObjects[item.id] = item;
       }
     } else {
-      favoritesArray = favoritesArray.filter(id => id !== itemId);
+      favoritesArray = favoritesArray.filter(id => id !== item.id);
+      delete favoritesObjects[item.id];
     }
 
     if (isInCart) {
-      if (!cartArray.includes(itemId)) {
-        cartArray.push(itemId);
+      if (!cartArray.includes(item)) {
+        cartArray.push(item.id);
+        cartObjects[item.id] = item;
       }
     } else {
-      cartArray = cartArray.filter(id => id !== itemId);
+      cartArray = cartArray.filter(id => id !== item.id);
+      delete cartObjects[item.id];
     }
 
-    categoriesObject[itemId] = category;
+    categoriesObject[item.id] = item.category;
 
     await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(favoritesArray));
     await AsyncStorage.setItem(CART_KEY, JSON.stringify(cartArray));
+    await AsyncStorage.setItem(FAVORITES_OBJECT_KEY, JSON.stringify(favoritesObjects));
+    await AsyncStorage.setItem(CART_OBJECT_KEY, JSON.stringify(cartObjects));
     await AsyncStorage.setItem(CATEGORIES_KEY, JSON.stringify(categoriesObject));
 
-    notifyListeners({ favorites: favoritesArray, cart: cartArray, categories: categoriesObject });
+    notifyListeners({ favorites: favoritesArray, cart: cartArray, categories: categoriesObject, favoritesObject: favoritesObjects, cartObject: cartObjects });
+    console.log('Item state saved:', { favorites: favoritesArray });
   } catch (error) {
     console.error('Error saving item state:', error);
   }
 };
 
-export const getItemState = async (itemId) => {
+export const getItemState = async (item) => {
   try {
     const favorites = await AsyncStorage.getItem(FAVORITES_KEY);
     const cart = await AsyncStorage.getItem(CART_KEY);
     const categories = await AsyncStorage.getItem(CATEGORIES_KEY);
+    const favoritesObject = await AsyncStorage.getItem(FAVORITES_OBJECT_KEY);
+    const cartObject = await AsyncStorage.getItem(CART_OBJECT_KEY);
 
     const favoritesArray = favorites ? JSON.parse(favorites) : [];
     const cartArray = cart ? JSON.parse(cart) : [];
     const categoriesObject = categories ? JSON.parse(categories) : {};
+    const favoritesObjects = favoritesObject ? JSON.parse(favoritesObject) : {};
+    const cartObjects = cartObject ? JSON.parse(cartObject) : {};
 
     return {
-      isFavorite: favoritesArray.includes(itemId),
-      isInCart: cartArray.includes(itemId),
-      category: categoriesObject[itemId] || null,
+      isFavorite: favoritesArray.includes(item.id),
+      isInCart: cartArray.includes(item.id),
+      category: categoriesObject[item.id] || null,
     };
   } catch (error) {
     console.error('Error getting item state:', error);
@@ -72,11 +90,17 @@ export const getAllItemStates = async () => {
     const favorites = await AsyncStorage.getItem(FAVORITES_KEY);
     const cart = await AsyncStorage.getItem(CART_KEY);
     const categories = await AsyncStorage.getItem(CATEGORIES_KEY);
+    const favoritesObject = await AsyncStorage.getItem(FAVORITES_OBJECT_KEY);
+    const cartObject = await AsyncStorage.getItem(CART_OBJECT_KEY);
 
     return {
       favorites: favorites ? JSON.parse(favorites) : [],
       cart: cart ? JSON.parse(cart) : [],
       categories: categories ? JSON.parse(categories) : {},
+      // return a list of values from the favoritesObject
+      favoritesObject: favoritesObject ? JSON.parse(favoritesObject) : {},
+      cartObject: cartObject ? JSON.parse(cartObject) : {},
+
     };
   } catch (error) {
     console.error('Error getting all item states:', error);
