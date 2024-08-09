@@ -41,14 +41,9 @@ const CarouselComponent = ({ title, fetchItems }) => {
   }, []);
 
   const renderItem = ({ item, index }) => (
+    // assign the style list to the style key of the object
     <ItemComponent
-      {...item}
-      style={[
-        styles.carouselItem,
-        { width: ITEM_WIDTH },
-        index === 0 && styles.firstCarouselItem,
-        index === items.length - 1 && styles.lastCarouselItem,
-      ]}
+      item={{ ...item, style: [styles.carouselItem, { width: ITEM_WIDTH }, index === 0 && styles.firstCarouselItem, index === items.length - 1 && styles.lastCarouselItem] }}
     />
   );
 
