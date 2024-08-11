@@ -1,65 +1,65 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import ItemGrid from '../Reusable/ItemGrid';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
+import { getAllItemStates, saveItemState, subscribeToChanges } from '../../utils/storage';
+import ShoppingCartItem from '../Reusable/ShoppingCartItem';
 
 const ShoppingCartPage = () => {
   const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
     loadCartItems();
+
+    // Subscribe to changes in the cart
+    const unsubscribe = subscribeToChanges(({ cartObject }) => {
+      setCartItems(Object.values(cartObject));
+    });
+
+    // Unsubscribe when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   const loadCartItems = async () => {
-    try {
-      const storedCartItems = await AsyncStorage.getItem('cartItems');
-      if (storedCartItems) {
-        setCartItems(JSON.parse(storedCartItems));
-      }
-    } catch (error) {
-      console.error('Error loading cart items:', error);
+    const { cartObject } = await getAllItemStates();
+    setCartItems(Object.values(cartObject));
+  };
+
+  const handleRemoveFromCart = async (itemId) => {
+    const item = cartItems.find(item => item.id === itemId);
+    if (item) {
+      await saveItemState(item, false, false);
+      // No need to call loadCartItems() here as the subscription will update the state
     }
   };
 
-  const fetchCartItems = useCallback(async (page) => {
-    try {
-      const response = await fetch('YOUR_API_BASE_URL/get_cart_items', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          item_ids: cartItems,
-          page: page,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+  const handleUpdateQuantity = async (itemId, change) => {
+    const item = cartItems.find(item => item.id === itemId);
+    if (item) {
+      const newQuantity = (item.quantity || 1) + change;
+      if (newQuantity > 0) {
+        await saveItemState({ ...item, quantity: newQuantity }, true, true);
+      } else {
+        await saveItemState(item, false, false);
       }
-
-      const data = await response.json();
-      return data.items;
-    } catch (error) {
-      console.error('Error fetching cart items:', error);
-      return [];
+      // No need to update state here as the subscription will handle it
     }
-  }, [cartItems]);
+  };
 
-  const handleRemoveFromCart = async (itemId) => {
-    const updatedCartItems = cartItems.filter(id => id !== itemId);
-    setCartItems(updatedCartItems);
-    try {
-      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-    } catch (error) {
-      console.error('Error updating cart items:', error);
-    }
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + item.price * (item.quantity || 1), 0).toFixed(2);
   };
 
   const handleCheckout = () => {
     // Implement checkout logic here
     console.log('Proceed to checkout');
   };
+
+  const renderItem = ({ item }) => (
+    <ShoppingCartItem
+      item={item}
+      onRemove={handleRemoveFromCart}
+      onUpdateQuantity={handleUpdateQuantity}
+    />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,14 +72,17 @@ const ShoppingCartPage = () => {
         </View>
       ) : (
         <>
-          <ItemGrid 
-            fetchItems={fetchCartItems} 
-            onRemoveItem={handleRemoveFromCart}
-            isCartView={true}
+          <FlatList
+            data={cartItems}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
           />
-          <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
-            <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-          </TouchableOpacity>
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalText}>Total: ${calculateTotal()}</Text>
+            <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
+              <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </SafeAreaView>
@@ -93,7 +96,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 15,
-    backgroundColor: '#1a1a1a',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
@@ -109,10 +112,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#fff',
   },
+  totalContainer: {
+    padding: 15,
+    backgroundColor: '#1a1a1a',
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+  },
   checkoutButton: {
     backgroundColor: '#8400ff',
     padding: 15,
-    margin: 15,
     borderRadius: 5,
     alignItems: 'center',
   },
