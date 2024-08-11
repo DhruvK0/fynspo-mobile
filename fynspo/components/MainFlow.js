@@ -13,6 +13,7 @@ import AuthContainer from './Auth/AuthContainer';
 import { SurveyScreen } from './Auth/Survey';
 import SvgComponent from './NavBarIcons';
 import TikTokStyleComponent from './Pages/Shopping';
+import ShoppingCartPage from './Pages/Cart';
 
 const Tab = createBottomTabNavigator();
 
@@ -89,7 +90,8 @@ export default function MainFlow() {
               <Tab.Screen name="Camera">
                 {(props) => (
                   <TrackedScreen route={props.route}>
-                    <Home {...props} />
+                    {/* <Home {...props} /> */}
+                    <ShoppingCartPage {...props} />
                   </TrackedScreen>
                 )}
               </Tab.Screen>
