@@ -44,8 +44,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   image: {
-    width: 125,
-    height: 125,
+    width: 100,
+    height: 100,
     borderRadius: 5,
   },
   details: {
