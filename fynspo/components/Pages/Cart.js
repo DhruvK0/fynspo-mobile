@@ -26,7 +26,7 @@ const ShoppingCartPage = () => {
   const handleRemoveFromCart = async (itemId) => {
     const item = cartItems.find(item => item.id === itemId);
     if (item) {
-      await saveItemState(item, false, false);
+      await saveItemState(item, true, false);
       // No need to call loadCartItems() here as the subscription will update the state
     }
   };
