@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Image,
@@ -7,26 +7,19 @@ import {
   StyleSheet,
   Dimensions,
   Modal,
-  ScrollView,
-  Animated,
-  PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { saveItemState, getItemState, subscribeToChanges } from '../../utils/storage';
+import ItemDetails from './ItemDetails';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
 
 const ItemComponent = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInBag, setIsInBag] = useState(false);
-  const panX = useRef(new Animated.Value(width)).current;
-  const translateX = panX.interpolate({
-    inputRange: [-1, 0, width],
-    outputRange: [0, 0, width],
-  });
 
   useEffect(() => {
     loadItemState();
@@ -46,54 +39,8 @@ const ItemComponent = ({ item }) => {
     setIsInBag(storedInCart);
   };
 
-  const resetModalPosition = Animated.spring(panX, {
-    toValue: 0,
-    damping: 15,
-    mass: 0.7,
-    stiffness: 150,
-    useNativeDriver: true,
-  });
-
-  const closeModal = () => {
-    Animated.spring(panX, {
-      toValue: width,
-      damping: 15,
-      mass: 0.7,
-      stiffness: 150,
-      useNativeDriver: true,
-    }).start();
-    setIsModalVisible(false);
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gestureState) => {
-        panX.setValue(gestureState.dx);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50 || gestureState.vx > 0.5) {
-          closeModal();
-        } else {
-          resetModalPosition.start();
-        }
-      },
-    })
-  ).current;
-
   const toggleModal = () => {
-    if (isModalVisible) {
-      closeModal();
-    } else {
-      setIsModalVisible(true);
-      Animated.spring(panX, {
-        toValue: 0,
-        damping: 15,
-        mass: 0.7,
-        stiffness: 150,
-        useNativeDriver: true,
-      }).start();
-    }
+    setIsModalVisible(!isModalVisible);
   };
 
   const toggleFavorite = async (event) => {
@@ -107,28 +54,6 @@ const ItemComponent = ({ item }) => {
     const newBagState = !isInBag;
     await saveItemState(item, isFavorite, newBagState);
   };
-
-  const ItemDetails = () => (
-    <Animated.View 
-      style={[styles.modalContainer, { transform: [{ translateX }] }]}
-      {...panResponder.panHandlers}
-    >
-      <View style={styles.modalContent}>
-        <ScrollView style={styles.modalScrollView}>
-          <Image source={{ uri: item.image }} style={styles.modalImage} />
-          <View style={styles.modalInfoContainer}>
-            <Text style={styles.modalBrandText}>{item.brand}</Text>
-            <Text style={styles.modalNameText}>{item.name}</Text>
-            <Text style={styles.modalPriceText}>${item.price}</Text>
-            <Text style={styles.modalCategoryText}>Category: {item.category}</Text>
-          </View>
-        </ScrollView>
-        <TouchableOpacity style={styles.backButton} onPress={toggleModal}>
-          <Ionicons name="chevron-back" size={30} color="white" />
-        </TouchableOpacity>
-      </View>
-    </Animated.View>
-  );
 
   return (
     <TouchableOpacity onPress={toggleModal} style={[styles.itemContainer, item.style]}>
@@ -162,9 +87,9 @@ const ItemComponent = ({ item }) => {
         animationType="none"
         transparent={true}
         visible={isModalVisible}
-        onRequestClose={closeModal}
+        onRequestClose={toggleModal}
       >
-        <ItemDetails />
+        <ItemDetails item={item} closeModal={toggleModal} />
       </Modal>
     </TouchableOpacity>
   );
@@ -221,61 +146,6 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     // padding: 5,
-  },
-  modalContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'white',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: height * 0.9,
-    overflow: 'hidden',
-  },
-  modalImage: {
-    width: '100%',
-    height: height * 0.5,
-    resizeMode: 'cover',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 20,
-    padding: 5,
-  },
-  modalScrollView: {
-    flex: 1,
-  },
-  modalInfoContainer: {
-    padding: 20,
-  },
-  modalBrandText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalNameText: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 10,
-  },
-  modalPriceText: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  modalCategoryText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 10,
   },
 });
 
