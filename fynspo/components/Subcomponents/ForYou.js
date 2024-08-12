@@ -23,6 +23,7 @@ const ForYouPage = () => {
   };
 
   const mapApiItemToCarouselItem = (apiItem) => ({
+    apiItem,
     id: apiItem.fynspo_id,
     image: apiItem.display_image,
     brand: apiItem.brand,
