@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { saveItemState, getItemState } from '../../utils/storage';
+import { saveItemState, getItemState, subscribeToChanges } from '../../utils/storage';
 
 const { width, height } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
@@ -30,7 +30,15 @@ const ItemComponent = ({ item }) => {
 
   useEffect(() => {
     loadItemState();
-  }, []);
+    const unsubscribe = subscribeToChanges((data) => {
+      setIsFavorite(data.favorites.includes(item.id));
+      setIsInBag(data.cart.includes(item.id));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [item.id]);
 
   const loadItemState = async () => {
     const { isFavorite: storedFavorite, isInCart: storedInCart } = await getItemState(item);
@@ -91,14 +99,12 @@ const ItemComponent = ({ item }) => {
   const toggleFavorite = async (event) => {
     event.stopPropagation();
     const newFavoriteState = !isFavorite;
-    setIsFavorite(newFavoriteState);
     await saveItemState(item, newFavoriteState, isInBag);
   };
 
   const toggleBag = async (event) => {
     event.stopPropagation();
     const newBagState = !isInBag;
-    setIsInBag(newBagState);
     await saveItemState(item, isFavorite, newBagState);
   };
 
