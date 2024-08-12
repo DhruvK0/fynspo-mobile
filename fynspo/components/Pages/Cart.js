@@ -38,7 +38,7 @@ const ShoppingCartPage = () => {
       if (newQuantity > 0) {
         await saveItemState({ ...item, quantity: newQuantity }, true, true);
       } else {
-        await saveItemState(item, false, false);
+        await saveItemState(item, true, false);
       }
       // No need to update state here as the subscription will handle it
     }
