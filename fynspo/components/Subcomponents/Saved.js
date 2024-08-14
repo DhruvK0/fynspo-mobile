@@ -9,7 +9,6 @@ const SavedPage = () => {
   const fetchSavedItems = useCallback(async (page) => {
     const { favoritesObject } = await getAllItemStates();
     const savedItemsArray = Object.values(favoritesObject);
-    console.log(savedItemsArray);
     // Simulating pagination for saved items
     const itemsPerPage = 10;
     const startIndex = (page - 1) * itemsPerPage;
