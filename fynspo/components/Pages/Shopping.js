@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, SafeAreaView, StatusBar, Platform, TextInput, Animated, PanResponder, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView, StatusBar, Platform, TextInput, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ForYouPage from '../Subcomponents/ForYou';
 import CollectionsView from '../Subcomponents/Collections';
-import ItemGrid from '../Reusable/ItemGrid';
 import SavedPage from '../Subcomponents/Saved';
+import FilterDrawer from '../Subcomponents/FilterDrawer';
 
 const { width, height } = Dimensions.get('window');
-
-const DRAWER_HEIGHT = height * 0.75;
 
 const TikTokStyleComponent = () => {
   const insets = useSafeAreaInsets();
@@ -19,105 +18,28 @@ const TikTokStyleComponent = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState([]);
-  const panY = useRef(new Animated.Value(DRAWER_HEIGHT)).current;
+  const [selectedFilters, setSelectedFilters] = useState({});
   const searchPanX = useRef(new Animated.Value(width)).current;
-  const overlayOpacity = useRef(new Animated.Value(0)).current;
-
-  const sortOptions = [
-    'Price: Low to High',
-    'Price: High to Low',
-    'New',
-    'Best Seller',
-    'Highest Rated'
-  ];
-
-  const filterOptions = ['Size', 'Price', 'Gender', 'Sale', 'Color'];
-
-  const resetFilterPosition = Animated.spring(panY, {
-    toValue: 0,
-    tension: 50,
-    friction: 10,
-    useNativeDriver: true,
-  });
-
-  const openFilter = () => {
-    setIsFilterOpen(true);
-    Animated.parallel([
-      resetFilterPosition,
-      Animated.timing(overlayOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const closeFilter = () => {
-    Animated.parallel([
-      Animated.spring(panY, {
-        toValue: DRAWER_HEIGHT,
-        tension: 50,
-        friction: 10,
-        useNativeDriver: true,
-      }),
-      Animated.timing(overlayOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setIsFilterOpen(false);
-    });
-  };
-
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderMove: (event, gestureState) => {
-      panY.setValue(Math.max(0, gestureState.dy));
-    },
-    onPanResponderRelease: (event, gestureState) => {
-      if (gestureState.dy > DRAWER_HEIGHT / 3) {
-        closeFilter();
-      } else {
-        resetFilterPosition.start();
-      }
-    },
-  });
-
-  const searchPanResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => {
-      return Math.abs(gestureState.dx) > 20;
-    },
-    onPanResponderMove: (_, gestureState) => {
-      if (gestureState.dx > 0) {
-        searchPanX.setValue(gestureState.dx);
-      }
-    },
-    onPanResponderRelease: (_, gestureState) => {
-      if (gestureState.dx > width / 3) {
-        Animated.timing(searchPanX, {
-          toValue: width,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setIsSearchOpen(false);
-          searchPanX.setValue(width);
-        });
-      } else {
-        Animated.timing(searchPanX, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  });
 
   useEffect(() => {
     setActiveTab(tabs[tabs.length - 1]);
+    loadFilters();
   }, []);
+
+  const loadFilters = async () => {
+    try {
+      const savedFilters = await AsyncStorage.getItem('filters');
+      if (savedFilters) {
+        const parsedFilters = JSON.parse(savedFilters);
+        setSelectedFilters(parsedFilters);
+        if (parsedFilters.sort) {
+          setSelectedSort(parsedFilters.sort);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading filters:', error);
+    }
+  };
 
   useEffect(() => {
     if (isSearchOpen) {
@@ -132,7 +54,7 @@ const TikTokStyleComponent = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'For You':
-        return <ForYouPage />;
+        return <ForYouPage filters={selectedFilters} />;
       case 'Saved':
         return <SavedPage />;
       case 'Collections':
@@ -142,37 +64,21 @@ const TikTokStyleComponent = () => {
     }
   };
 
-  const fetchSavedItems = async (page) => {
-    // Implement your API call here
-    // This is a placeholder implementation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return Array.from({ length: 10 }, (_, i) => ({
-      id: `${page}-${i}`,
-      image: 'https://example.com/image.jpg',
-      brand: `Brand ${page}-${i}`,
-      name: `Item ${page}-${i}`,
-      price: Math.floor(Math.random() * 100) + 20,
-    }));
-  };
-
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
+    // Implement search functionality here
   };
 
   const clearSearch = () => {
     setSearchQuery('');
   };
 
-  const toggleSort = (option) => {
-    setSelectedSort(selectedSort === option ? '' : option);
+  const openFilter = () => {
+    setIsFilterOpen(true);
   };
 
-  const toggleFilter = (option) => {
-    setSelectedFilters(prev =>
-      prev.includes(option)
-        ? prev.filter(item => item !== option)
-        : [...prev, option]
-    );
+  const closeFilter = () => {
+    setIsFilterOpen(false);
   };
 
   const renderSearchOverlay = () => {
@@ -185,7 +91,6 @@ const TikTokStyleComponent = () => {
             top: Platform.OS === 'ios' ? insets.top : 0
           }
         ]}
-        {...searchPanResponder.panHandlers}
       >
         <View style={styles.searchContent}>
           <View style={styles.searchHeader}>
@@ -211,76 +116,13 @@ const TikTokStyleComponent = () => {
               )}
             </View>
           </View>
-          <ScrollView style={styles.searchResults}>
+          <View style={styles.searchResults}>
             {/* Add search results here */}
-          </ScrollView>
+          </View>
         </View>
       </Animated.View>
     );
   };
-
-  const renderFilterDrawer = () => (
-    <Animated.View 
-      style={[
-        styles.filterOverlay,
-        { opacity: overlayOpacity }
-      ]}
-    >
-      <TouchableWithoutFeedback onPress={closeFilter}>
-        <View style={styles.filterOverlayBackground} />
-      </TouchableWithoutFeedback>
-      <Animated.View 
-        style={[
-          styles.filterDrawer,
-          { transform: [{ translateY: panY }] }
-        ]}
-      >
-        <TouchableWithoutFeedback>
-          <View>
-            <View {...panResponder.panHandlers}>
-              <View style={styles.filterHandle} />
-              <View style={styles.filterHeader}>
-              <Text style={styles.filterTitle}>Filter and Sort</Text>
-              <TouchableOpacity onPress={closeFilter} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            </View>
-            
-            <ScrollView style={styles.filterScrollView}>
-              <Text style={styles.subHeader}>Sort By</Text>
-              {sortOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.filterOption,
-                    selectedSort === option && styles.selectedOption
-                  ]}
-                  onPress={() => toggleSort(option)}
-                >
-                  <Text style={styles.filterOptionText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-
-              <Text style={styles.subHeader}>Filter</Text>
-              {filterOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.filterOption,
-                    selectedFilters.includes(option) && styles.selectedOption
-                  ]}
-                  onPress={() => toggleFilter(option)}
-                >
-                  <Text style={styles.filterOptionText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableWithoutFeedback>
-      </Animated.View>
-    </Animated.View>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -306,15 +148,20 @@ const TikTokStyleComponent = () => {
             <Ionicons name="search" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
-        <ScrollView style={styles.content}>
+        <View style={styles.content}>
           {renderContent()}
-        </ScrollView>
+        </View>
       </View>
 
-      {/* Filter Drawer */}
-      {isFilterOpen && renderFilterDrawer()}
+      <FilterDrawer 
+        isOpen={isFilterOpen}
+        closeFilter={closeFilter}
+        selectedSort={selectedSort}
+        setSelectedSort={setSelectedSort}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+      />
 
-      {/* Search Overlay */}
       {isSearchOpen && renderSearchOverlay()}
     </SafeAreaView>
   );
@@ -333,6 +180,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   iconButton: {
     padding: 10,
@@ -346,7 +195,7 @@ const styles = StyleSheet.create({
   },
   tab: {
     paddingVertical: 10,
-    width: (width - 100) / 3,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   activeTab: {
@@ -364,86 +213,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  contentText: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  filterOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  filterOverlayBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  filterDrawer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: DRAWER_HEIGHT,
-    backgroundColor: '#000',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-  },
-  filterHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  filterHandle: {
-    width: 40,
-    height: 5,
-    backgroundColor: '#666',
-    borderRadius: 3,
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  filterTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    padding: 5,
-  },
-  // filterScrollView: {
-  //   flex: 1,
-  // },
-  subHeader: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  filterOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  filterOptionText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  selectedOption: {
-    backgroundColor: '#8400ff',
-    borderRadius: 5,
-  },
   searchOverlay: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#000',
+    height: '100%',
   },
   searchContent: {
     flex: 1,
