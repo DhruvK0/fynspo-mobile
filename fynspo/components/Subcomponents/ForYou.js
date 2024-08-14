@@ -1,50 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, StyleSheet, SafeAreaView, View, Text } from 'react-native';
 import CarouselComponent from '../Reusable/Carousel';
+import { FetchService, getFilters } from '../../utils/requests';
 
 const ForYouPage = () => {
   const [trendingItems, setTrendingItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState({});
+
+  useEffect(() => {
+    loadFilters();
+  }, []);
 
   useEffect(() => {
     fetchTrendingItems();
-  }, []);
+  }, [filters]);
+
+  const loadFilters = async () => {
+    const savedFilters = await getFilters();
+    setFilters(savedFilters);
+  };
 
   const fetchTrendingItems = async () => {
     try {
-      const response = await fetch('https://mock-apis-fex9.onrender.com/get_trending_items');
-      const data = await response.json();
+      setIsLoading(true);
+      const data = await FetchService.getTrendingItems(1, filters);
       setTrendingItems(data);
-      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching trending items:', error);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const mapApiItemToCarouselItem = (apiItem) => ({
+  const mapApiItemToCarouselItem = useCallback((apiItem) => ({
     apiItem,
     id: apiItem.fynspo_id,
     image: apiItem.display_image,
     brand: apiItem.brand,
     name: apiItem.title,
     price: apiItem.price,
-  });
+  }), []);
 
-  const getItemsForCategory = (offset = 0, page = 0) => {
+  const getItemsForCategory = useCallback((offset = 0, page = 0) => {
     const startIndex = (offset + page) * 10 % trendingItems.length;
     const endIndex = startIndex + 10;
     return trendingItems
       .concat(trendingItems) // Duplicate the array to allow wrapping around
       .slice(startIndex, startIndex + 10)
       .map(mapApiItemToCarouselItem);
-  };
+  }, [trendingItems, mapApiItemToCarouselItem]);
 
-  const fetchItemsForCategory = (offset) => async (page) => {
+  const fetchItemsForCategory = useCallback((offset) => async (page) => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     return getItemsForCategory(offset, page);
-  };
+  }, [getItemsForCategory]);
 
   const categories = [
     { title: 'Just for you', offset: 0 },
