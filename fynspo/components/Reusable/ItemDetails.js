@@ -9,6 +9,7 @@ import {
   ScrollView,
   Animated,
   FlatList,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { saveItemState, getItemState } from '../../utils/storage';
@@ -44,6 +45,15 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
     .map(([key]) => key.replace('size_', ''));
 
   const addToBag = async () => {
+    if (!selectedSize) {
+      Alert.alert(
+        "Size Required",
+        "Please select a size before adding to bag.",
+        [{ text: "Ok", onPress: () => console.log("OK Pressed") }]
+      );
+      return;
+    }
+
     if (!isInBag) {
       await saveItemState(item, false, true);
       setIsInBag(true);
@@ -86,6 +96,12 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
     name: apiItem.title,
     price: apiItem.price,
   });
+
+  const handleSimilarItemPress = (newItem) => {
+    closeModal();
+    // Use setTimeout to ensure the current modal is closed before opening the new one
+    setTimeout(() => navigateToItem(newItem), 300);
+  };
 
   return (
     <Animated.View 
@@ -154,7 +170,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
           <TouchableOpacity 
             style={[styles.addToBagButton, isInBag && styles.addToBagButtonDisabled]} 
             onPress={addToBag}
-            disabled={isInBag || !selectedSize}
+            disabled={isInBag}
           >
             <Text style={styles.addToBagButtonText}>
               {isInBag ? 'In Bag' : 'Add to Bag'}
@@ -167,7 +183,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
               title=""
               fetchItems={fetchSimilarItems}
               initialItems={[]}
-              onItemPress={navigateToItem}
+              onItemPress={handleSimilarItemPress}
             />
           </View>
         </View>
@@ -178,7 +194,6 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
     </Animated.View>
   );
 };
-
 const styles = StyleSheet.create({
   modalContainer: {
     position: 'absolute',
@@ -272,8 +287,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     marginRight: 8,
   },
   selectedSizeButton: {
