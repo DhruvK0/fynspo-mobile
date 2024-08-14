@@ -1,183 +1,3 @@
-// import React, { useRef, useState } from 'react';
-// import {
-//   View,
-//   Image,
-//   Text,
-//   TouchableOpacity,
-//   StyleSheet,
-//   Dimensions,
-//   ScrollView,
-//   Animated,
-//   PanResponder,
-// } from 'react-native';
-// import { Ionicons } from '@expo/vector-icons';
-
-// const { width, height } = Dimensions.get('window');
-
-// const ItemDetails = ({ item, closeModal }) => {
-//   const [selectedSize, setSelectedSize] = useState(null);
-//   const panX = useRef(new Animated.Value(0)).current;
-//   const translateX = panX.interpolate({
-//     inputRange: [-1, 0, width],
-//     outputRange: [0, 0, width],
-//   });
-
-//   const resetModalPosition = Animated.spring(panX, {
-//     toValue: 0,
-//     damping: 15,
-//     mass: 0.7,
-//     stiffness: 150,
-//     useNativeDriver: true,
-//   });
-
-//   const panResponder = useRef(
-//     PanResponder.create({
-//       onStartShouldSetPanResponder: () => true,
-//       onPanResponderMove: (_, gestureState) => {
-//         panX.setValue(gestureState.dx);
-//       },
-//       onPanResponderRelease: (_, gestureState) => {
-//         if (gestureState.dx > 50 || gestureState.vx > 0.5) {
-//           closeModal();
-//         } else {
-//           resetModalPosition.start();
-//         }
-//       },
-//     })
-//   ).current;
-
-//   const availableSizes = Object.entries(item.apiItem)
-//     .filter(([key, value]) => key.startsWith('size_') && value === 2)
-//     .map(([key]) => key.replace('size_', ''));
-
-//   return (
-//     <Animated.View 
-//       style={[styles.modalContainer, { transform: [{ translateX }] }]}
-//       {...panResponder.panHandlers}
-//     >
-//       <View style={styles.modalContent}>
-//         <ScrollView style={styles.modalScrollView}>
-//           <Image source={{ uri: item.image }} style={styles.modalImage} />
-//           <View style={styles.modalInfoContainer}>
-//             <Text style={styles.modalBrandText}>{item.brand}</Text>
-//             <Text style={styles.modalNameText}>{item.name}</Text>
-//             <Text style={styles.modalPriceText}>${item.price}</Text>
-//             <Text style={styles.modalCategoryText}>Category: {item.category}</Text>
-//             <Text style={styles.sizeTitle}>Available Sizes:</Text>
-//             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sizeScrollView}>
-//               {availableSizes.map((size) => (
-//                 <TouchableOpacity
-//                   key={size}
-//                   style={[
-//                     styles.sizeButton,
-//                     selectedSize === size && styles.selectedSizeButton
-//                   ]}
-//                   onPress={() => setSelectedSize(size)}
-//                 >
-//                   <Text style={[
-//                     styles.sizeButtonText,
-//                     selectedSize === size && styles.selectedSizeButtonText
-//                   ]}>{size}</Text>
-//                 </TouchableOpacity>
-//               ))}
-//             </ScrollView>
-//           </View>
-//         </ScrollView>
-//         <TouchableOpacity style={styles.backButton} onPress={closeModal}>
-//           <Ionicons name="chevron-back" size={30} color="white" />
-//         </TouchableOpacity>
-//       </View>
-//     </Animated.View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   modalContainer: {
-//     position: 'absolute',
-//     top: 0,
-//     left: 0,
-//     right: 0,
-//     bottom: 0,
-//     backgroundColor: 'white',
-//   },
-//   modalContent: {
-//     backgroundColor: '#fff',
-//     borderTopLeftRadius: 20,
-//     borderTopRightRadius: 20,
-//     height: height * 0.9,
-//     overflow: 'hidden',
-//   },
-//   modalImage: {
-//     width: '100%',
-//     height: height * 0.5,
-//     resizeMode: 'cover',
-//   },
-//   backButton: {
-//     position: 'absolute',
-//     top: 40,
-//     left: 20,
-//     zIndex: 1,
-//     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-//     borderRadius: 20,
-//     padding: 5,
-//   },
-//   modalScrollView: {
-//     flex: 1,
-//   },
-//   modalInfoContainer: {
-//     padding: 20,
-//   },
-//   modalBrandText: {
-//     fontSize: 24,
-//     fontWeight: 'bold',
-//     marginBottom: 10,
-//   },
-//   modalNameText: {
-//     fontSize: 18,
-//     color: '#666',
-//     marginBottom: 10,
-//   },
-//   modalPriceText: {
-//     fontSize: 22,
-//     fontWeight: 'bold',
-//     marginBottom: 20,
-//   },
-//   modalCategoryText: {
-//     fontSize: 16,
-//     color: '#666',
-//     marginBottom: 10,
-//   },
-//   sizeScrollView: {
-//     marginVertical: 10,
-//   },
-//   sizeButton: {
-//     borderWidth: 1,
-//     borderColor: '#ddd',
-//     borderRadius: 20,
-//     paddingHorizontal: 12,
-//     paddingVertical: 6,
-//     marginRight: 8,
-//   },
-//   selectedSizeButton: {
-//     backgroundColor: '#8400ff',
-//     borderColor: '#8400ff',
-//   },
-//   sizeButtonText: {
-//     fontSize: 14,
-//     color: '#333',
-//   },
-//   selectedSizeButtonText: {
-//     color: 'white',
-//   },
-//   sizeTitle: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     marginTop: 10,
-//     marginBottom: 5,
-//   },
-// });
-
-// export default ItemDetails;
 import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
@@ -188,30 +8,27 @@ import {
   Dimensions,
   ScrollView,
   Animated,
-  PanResponder,
-  LayoutAnimation,
-  Platform,
-  UIManager,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { saveItemState, getItemState } from '../../utils/storage';
+import CarouselComponent from '../Reusable/Carousel';
 
 const { width, height } = Dimensions.get('window');
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-const ItemDetails = ({ item, closeModal }) => {
+const ItemDetails = ({ item, closeModal, navigateToItem }) => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [isInBag, setIsInBag] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const panX = useRef(new Animated.Value(0)).current;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const panY = useRef(new Animated.Value(0)).current;
 
-  const translateX = panX.interpolate({
-    inputRange: [-1, 0, width],
-    outputRange: [0, 0, width],
+  const translateY = panY.interpolate({
+    inputRange: [-1, 0, height],
+    outputRange: [0, 0, height],
   });
+
+  const images = JSON.parse(item.apiItem.images);
 
   useEffect(() => {
     loadItemState();
@@ -221,30 +38,6 @@ const ItemDetails = ({ item, closeModal }) => {
     const { isInCart } = await getItemState(item);
     setIsInBag(isInCart);
   };
-
-  const resetModalPosition = Animated.spring(panX, {
-    toValue: 0,
-    damping: 15,
-    mass: 0.7,
-    stiffness: 150,
-    useNativeDriver: true,
-  });
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gestureState) => {
-        panX.setValue(gestureState.dx);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50 || gestureState.vx > 0.5) {
-          closeModal();
-        } else {
-          resetModalPosition.start();
-        }
-      },
-    })
-  ).current;
 
   const availableSizes = Object.entries(item.apiItem)
     .filter(([key, value]) => key.startsWith('size_') && value === 2)
@@ -258,17 +51,69 @@ const ItemDetails = ({ item, closeModal }) => {
   };
 
   const toggleDescription = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsDescriptionExpanded(!isDescriptionExpanded);
   };
 
+  const renderImageItem = ({ item: imageUrl }) => (
+    <Image source={{ uri: imageUrl }} style={styles.carouselImage} />
+  );
+
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setCurrentImageIndex(viewableItems[0].index);
+    }
+  }).current;
+
+  const fetchSimilarItems = async (page) => {
+    try {
+      const response = await fetch('https://mock-apis-fex9.onrender.com/get_trending_items');
+      const data = await response.json();
+      // Simulate pagination by slicing the data
+      const startIndex = page * 10;
+      const endIndex = startIndex + 10;
+      return data.slice(startIndex, endIndex).map(mapApiItemToCarouselItem);
+    } catch (error) {
+      console.error('Error fetching similar items:', error);
+      return [];
+    }
+  };
+
+  const mapApiItemToCarouselItem = (apiItem) => ({
+    apiItem,
+    id: apiItem.fynspo_id,
+    image: apiItem.display_image,
+    brand: apiItem.brand,
+    name: apiItem.title,
+    price: apiItem.price,
+  });
+
   return (
     <Animated.View 
-      style={[styles.modalContainer, { transform: [{ translateX }] }]}
-      {...panResponder.panHandlers}
+      style={[styles.modalContainer, { transform: [{ translateY }] }]}
     >
       <ScrollView style={styles.modalContent}>
-        <Image source={{ uri: item.image }} style={styles.modalImage} />
+        <View style={styles.carouselContainer}>
+          <FlatList
+            data={images}
+            renderItem={renderImageItem}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
+          />
+          <View style={styles.paginationDots}>
+            {images.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  index === currentImageIndex && styles.paginationDotActive,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
         <View style={styles.modalInfoContainer}>
           <Text style={styles.modalBrandText}>{item.brand}</Text>
           <Text style={styles.modalNameText}>{item.name}</Text>
@@ -315,10 +160,20 @@ const ItemDetails = ({ item, closeModal }) => {
               {isInBag ? 'In Bag' : 'Add to Bag'}
             </Text>
           </TouchableOpacity>
+          
+          <View style={styles.similarStylesContainer}>
+            <Text style={styles.similarStylesTitle}>Similar Styles</Text>
+            <CarouselComponent
+              title=""
+              fetchItems={fetchSimilarItems}
+              initialItems={[]}
+              onItemPress={navigateToItem}
+            />
+          </View>
         </View>
       </ScrollView>
-      <TouchableOpacity style={styles.backButton} onPress={closeModal}>
-        <Ionicons name="chevron-back" size={30} color="white" />
+      <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+        <Ionicons name="close" size={30} color="white" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -335,17 +190,38 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    height: height * 0.9,
+    height: height,
   },
-  modalImage: {
-    width: '100%',
+  carouselContainer: {
+    height: height * 0.5,
+  },
+  carouselImage: {
+    width: width,
     height: height * 0.5,
     resizeMode: 'cover',
   },
-  backButton: {
+  paginationDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 10,
+    width: '100%',
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: 'white',
+  },
+  closeButton: {
     position: 'absolute',
     top: 40,
-    left: 20,
+    right: 20,
     zIndex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
@@ -396,8 +272,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
     marginRight: 8,
   },
   selectedSizeButton: {
@@ -432,6 +308,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  similarStylesContainer: {
+    marginTop: 30,
+  },
+  similarStylesTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
   },
 });
 
