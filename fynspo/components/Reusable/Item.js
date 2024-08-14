@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Image,
   Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { saveItemState, getItemState, subscribeToChanges } from '../../utils/storage';
@@ -15,6 +16,39 @@ import ItemDetails from './ItemDetails';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
+
+// Utility function to preload images
+const preloadImages = (images) => {
+  const imagesToPreload = images.map(image => ({ uri: image }));
+  FastImage.preload(imagesToPreload);
+};
+
+// Custom ImageComponent with loading indicator
+const ImageComponent = ({ source, style }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    preloadImages([source]);
+  }, [source]);
+
+  return (
+    <View style={style}>
+      {isLoading && (
+        <ActivityIndicator 
+          size="small" 
+          color="#8400ff" 
+          style={StyleSheet.absoluteFill} 
+        />
+      )}
+      <FastImage
+        style={StyleSheet.absoluteFill}
+        source={{ uri: source }}
+        onLoadEnd={() => setIsLoading(false)}
+        resizeMode={FastImage.resizeMode.cover}
+      />
+    </View>
+  );
+};
 
 const ItemComponent = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -58,7 +92,7 @@ const ItemComponent = ({ item }) => {
   return (
     <TouchableOpacity onPress={toggleModal} style={[styles.itemContainer, item.style]}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: item.image }} style={styles.image} />
+        <ImageComponent source={item.image} style={styles.image} />
         <TouchableOpacity style={styles.heartButton} onPress={toggleFavorite}>
          <FontAwesome 
             name={isFavorite ? "heart" : "heart-o" }
@@ -109,7 +143,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: ITEM_WIDTH * 1.2,
-    resizeMode: 'cover',
   },
   heartButton: {
     position: 'absolute',
