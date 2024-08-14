@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
-  Image,
   Text,
   TouchableOpacity,
   StyleSheet,
@@ -10,12 +9,43 @@ import {
   Animated,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 import { saveItemState, getItemState } from '../../utils/storage';
 import CarouselComponent from '../Reusable/Carousel';
 
 const { width, height } = Dimensions.get('window');
+
+// Utility function to preload images
+const preloadImages = (images) => {
+  const imagesToPreload = images.map(image => ({ uri: image }));
+  FastImage.preload(imagesToPreload);
+};
+
+// Custom ImageComponent with loading indicator
+const ImageComponent = ({ source, style }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  return (
+    <View style={style}>
+      {isLoading && (
+        <ActivityIndicator 
+          size="large" 
+          color="#8400ff" 
+          style={StyleSheet.absoluteFill} 
+        />
+      )}
+      <FastImage
+        style={StyleSheet.absoluteFill}
+        source={{ uri: source }}
+        onLoadEnd={() => setIsLoading(false)}
+        resizeMode={FastImage.resizeMode.cover}
+      />
+    </View>
+  );
+};
 
 const ItemDetails = ({ item, closeModal, navigateToItem }) => {
   const [selectedSize, setSelectedSize] = useState(null);
@@ -33,6 +63,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
 
   useEffect(() => {
     loadItemState();
+    preloadImages(images);
   }, []);
 
   const loadItemState = async () => {
@@ -65,7 +96,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
   };
 
   const renderImageItem = ({ item: imageUrl }) => (
-    <Image source={{ uri: imageUrl }} style={styles.carouselImage} />
+    <ImageComponent source={imageUrl} style={styles.carouselImage} />
   );
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
