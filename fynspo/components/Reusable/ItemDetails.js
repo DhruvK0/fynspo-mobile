@@ -232,10 +232,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     height: height,
   },
   carouselContainer: {
@@ -280,16 +280,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#fff',
   },
   modalNameText: {
     fontSize: 18,
-    color: '#666',
+    color: '#fff',
     marginBottom: 10,
   },
   modalPriceText: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#fff'
   },
   accordionHeader: {
     flexDirection: 'row',
@@ -302,13 +304,15 @@ const styles = StyleSheet.create({
   accordionHeaderText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: "#fff"
   },
   accordionContent: {
     paddingVertical: 10,
+    color: "#fff"
   },
   modalDescriptionText: {
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
     lineHeight: 24,
   },
   sizeScrollView: {
@@ -316,7 +320,7 @@ const styles = StyleSheet.create({
   },
   sizeButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#fff',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -328,7 +332,7 @@ const styles = StyleSheet.create({
   },
   sizeButtonText: {
     fontSize: 14,
-    color: '#333',
+    color: '#fff',
   },
   selectedSizeButtonText: {
     color: 'white',
@@ -338,6 +342,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
+    color: "#fff"
   },
   addToBagButton: {
     backgroundColor: '#8400ff',
