@@ -17,6 +17,7 @@ import { saveItemState, getItemState } from '../../utils/storage';
 import CarouselComponent from '../Reusable/Carousel';
 
 const { width, height } = Dimensions.get('window');
+const NAVBAR_HEIGHT = 50; // Height of the navbar
 
 // Utility function to preload images
 const preloadImages = (images) => {
@@ -135,9 +136,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
   };
 
   return (
-    <Animated.View 
-      style={[styles.modalContainer, { transform: [{ translateY }] }]}
-    >
+    <View style={styles.modalContainer}>
       <ScrollView style={styles.modalContent}>
         <View style={styles.carouselContainer}>
           <FlatList
@@ -161,24 +160,13 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
             ))}
           </View>
         </View>
+        <View style={styles.itemInfoContainer}>
+            <Text style={styles.modalBrandText}>{item.brand}</Text>
+            <Text style={styles.modalNameText}>{item.name}</Text>
+            <Text style={styles.modalPriceText}>${item.price}</Text>
+          </View>
         <View style={styles.modalInfoContainer}>
-          <Text style={styles.modalBrandText}>{item.brand}</Text>
-          <Text style={styles.modalNameText}>{item.name}</Text>
-          <Text style={styles.modalPriceText}>${item.price}</Text>
           
-          <TouchableOpacity onPress={toggleDescription} style={styles.accordionHeader}>
-            <Text style={styles.accordionHeaderText}>Description</Text>
-            <Ionicons 
-              name={isDescriptionExpanded ? "chevron-up" : "chevron-down"} 
-              size={24} 
-              color="#333"
-            />
-          </TouchableOpacity>
-          {isDescriptionExpanded && (
-            <View style={styles.accordionContent}>
-              <Text style={styles.modalDescriptionText}>{item.apiItem.description}</Text>
-            </View>
-          )}
           
           <Text style={styles.sizeTitle}>Available Sizes:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sizeScrollView}>
@@ -198,18 +186,23 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <TouchableOpacity 
-            style={[styles.addToBagButton, isInBag && styles.addToBagButtonDisabled]} 
-            onPress={addToBag}
-            disabled={isInBag}
-          >
-            <Text style={styles.addToBagButtonText}>
-              {isInBag ? 'In Bag' : 'Add to Bag'}
-            </Text>
+
+          <TouchableOpacity onPress={toggleDescription} style={styles.accordionHeader}>
+            <Text style={styles.accordionHeaderText}>Description</Text>
+            <Ionicons 
+              name={isDescriptionExpanded ? "chevron-up" : "chevron-down"} 
+              size={24} 
+              color="#fff"
+            />
           </TouchableOpacity>
+          {isDescriptionExpanded && (
+            <View style={styles.accordionContent}>
+              <Text style={styles.modalDescriptionText}>{item.apiItem.description}</Text>
+            </View>
+          )}
           
           <View style={styles.similarStylesContainer}>
-            <Text style={styles.similarStylesTitle}>Similar Styles</Text>
+            <Text style={styles.similarStylesTitle}>Unique to You</Text>
             <CarouselComponent
               title=""
               fetchItems={fetchSimilarItems}
@@ -218,25 +211,36 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
             />
           </View>
         </View>
+        {/* Add padding at the bottom to account for the Add to Bag button and navbar */}
+        <View style={{ height:50 }} />
       </ScrollView>
       <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
         <Ionicons name="close" size={30} color="white" />
       </TouchableOpacity>
-    </Animated.View>
+      <View style={styles.bottomButtonContainer}>
+        <TouchableOpacity 
+          style={[styles.addToBagButton, isInBag && styles.addToBagButtonDisabled]} 
+          onPress={addToBag}
+          disabled={isInBag}
+        >
+          <Text style={styles.addToBagButtonText}>
+            {isInBag ? 'In Bag' : 'Add to Bag'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
+
 const styles = StyleSheet.create({
   modalContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     backgroundColor: 'black',
+    marginBottom: NAVBAR_HEIGHT + 25,
   },
   modalContent: {
     backgroundColor: '#000',
-    height: height,
+    height: height - NAVBAR_HEIGHT,
   },
   carouselContainer: {
     height: height * 0.5,
@@ -274,24 +278,24 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   modalInfoContainer: {
-    padding: 20,
+    paddingHorizontal: 10,
   },
   modalBrandText: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#fff',
+    color: '#000',
   },
   modalNameText: {
     fontSize: 18,
-    color: '#fff',
+    color: '#000',
     marginBottom: 10,
   },
   modalPriceText: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#fff'
+    marginBottom: 10,
+    color: '#000'
   },
   accordionHeader: {
     flexDirection: 'row',
@@ -302,7 +306,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   accordionHeaderText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: "#fff"
   },
@@ -338,19 +342,28 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   sizeTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
     color: "#fff"
   },
+  bottomButtonContainer: {
+    // position: 'absolute',
+    // bottom: NAVBAR_HEIGHT,
+    left: 0,
+    right: 0,
+    // backgroundColor: 'black',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    // marginHorizontal: -10,
+  },
   addToBagButton: {
     backgroundColor: '#8400ff',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 45,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
   },
   addToBagButtonDisabled: {
     backgroundColor: '#ccc',
@@ -358,7 +371,7 @@ const styles = StyleSheet.create({
   addToBagButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
   },
   similarStylesContainer: {
     marginTop: 30,
@@ -366,8 +379,17 @@ const styles = StyleSheet.create({
   similarStylesTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 5,
+    color: '#fff',
   },
+  itemInfoContainer: {
+    // You can add specific styles for this container if needed
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  }
 });
 
 export default ItemDetails;
