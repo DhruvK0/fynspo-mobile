@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 
@@ -25,6 +25,9 @@ export function SurveyScreen({ onComplete, isEditing = false }) {
   }, [isEditing, user.unsafeMetadata]);
 
   const handleSurveyComplete = async () => {
+    if (fashionTrends.length === 0) {
+      Alert.alert("Selection Required", "Please select at least one fashion trend before completing the survey.");
+    } else {
     try {
       await user.update({
         unsafeMetadata: { 
@@ -38,13 +41,25 @@ export function SurveyScreen({ onComplete, isEditing = false }) {
     } catch (error) {
       console.error("Failed to update user metadata", error);
     }
-  };
+  }};
 
   const toggleTrend = (trend) => {
     if (fashionTrends.includes(trend)) {
       setFashionTrends(fashionTrends.filter(t => t !== trend));
     } else {
       setFashionTrends([...fashionTrends, trend]);
+    }
+  };
+
+  const moveToNextStep = () => {
+    if (step === 1 && !fashionPreference) {
+      Alert.alert("Selection Required", "Please select a fashion preference before proceeding.");
+    } else if (step === 2) {
+      setStep(3);
+    } else if (step === 3 && fashionTrends.length === 0) {
+      Alert.alert("Selection Required", "Please select at least one fashion trend before completing the survey.");
+    } else {
+      setStep(step + 1);
     }
   };
 
@@ -70,7 +85,7 @@ export function SurveyScreen({ onComplete, isEditing = false }) {
                   <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity style={styles.nextButton} onPress={() => setStep(2)}>
+              <TouchableOpacity style={styles.nextButton} onPress={moveToNextStep}>
                 <Text style={styles.buttonText}>Next</Text>
               </TouchableOpacity>
             </View>
@@ -94,7 +109,7 @@ export function SurveyScreen({ onComplete, isEditing = false }) {
               <TouchableOpacity style={styles.backButton} onPress={() => setStep(1)}>
                 <Text style={styles.buttonText}>Back</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.nextButton} onPress={() => setStep(3)}>
+              <TouchableOpacity style={styles.nextButton} onPress={moveToNextStep}>
                 <Text style={styles.buttonText}>Next</Text>
               </TouchableOpacity>
             </View>
