@@ -16,6 +16,7 @@ import ItemDetails from './ItemDetails';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
+const ITEM_HEIGHT = ITEM_WIDTH * 2; // Adjust this multiplier as needed
 
 // Utility function to preload images
 const preloadImages = (images) => {
@@ -104,7 +105,7 @@ const ItemComponent = ({ item }) => {
       <View style={styles.infoContainer}>
         <View style={styles.textContainer}>
           <Text style={styles.brandText} numberOfLines={1}>{item.brand}</Text>
-          <Text style={styles.nameText}>{item.name}</Text>
+          <Text style={styles.nameText} numberOfLines={3}>{item.name}</Text>
         </View>
         <View style={styles.bottomRow}>
           <Text style={styles.priceText}>${item.price}</Text>
@@ -132,6 +133,7 @@ const ItemComponent = ({ item }) => {
 const styles = StyleSheet.create({
   itemContainer: {
     width: ITEM_WIDTH,
+    height: ITEM_HEIGHT,
     marginBottom: 20,
     backgroundColor: '#fff',
     borderRadius: 10,
