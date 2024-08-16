@@ -54,7 +54,6 @@ export const saveItemState = async (item, isFavorite, isInCart) => {
     await AsyncStorage.setItem(CATEGORIES_KEY, JSON.stringify(categoriesObject));
 
     notifyListeners({ favorites: favoritesArray, cart: cartArray, categories: categoriesObject, favoritesObject: favoritesObjects, cartObject: cartObjects });
-    console.log('Item state saved:', { favorites: favoritesArray });
   } catch (error) {
     console.error('Error saving item state:', error);
   }
