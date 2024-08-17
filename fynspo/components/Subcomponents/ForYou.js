@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, StyleSheet, SafeAreaView, View, Text } from 'react-native';
 import CarouselComponent from '../Reusable/Carousel';
+import SplashCarouselComponent from '../Reusable/SplashCarousel';
 import { FetchService, getFilters } from '../../utils/requests';
 
 const ForYouPage = () => {
@@ -79,7 +80,7 @@ const ForYouPage = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {categories.map((category, index) => (
-          <CarouselComponent 
+          <SplashCarouselComponent 
             key={index} 
             title={category.title} 
             fetchItems={fetchItemsForCategory(category.offset)}
