@@ -1,10 +1,76 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { getAllItemStates, saveItemState, subscribeToChanges } from '../../utils/storage';
 import ShoppingCartItem from '../Reusable/ShoppingCartItem';
+import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 
 const ShoppingCartPage = () => {
   const [cartItems, setCartItems] = useState([]);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [loading, setLoading] = useState(false);
+
+  const fetchPaymentSheetParams = async () => {
+    const response = await fetch('https://backend-server-8doz.onrender.com/payment-sheet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const { paymentIntent, ephemeralKey, customer } = await response.json();
+
+    return {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+    };
+  };
+
+  const initializePaymentSheet = async () => {
+    const {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+    } = await fetchPaymentSheetParams();
+
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: "Example, Inc.",
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      paymentIntentClientSecret: paymentIntent,
+      // Set `allowsDelayedPaymentMethods` to true if your business can handle payment
+      //methods that complete payment after a delay, like SEPA Debit and Sofort.
+      allowsDelayedPaymentMethods: true,
+      defaultBillingDetails: {
+        name: 'Jane Doe',
+      },
+      returnURL: 'fynspo://payment-complete',
+      applePay: {
+        merchantCountryCode: 'US',
+      },
+      googlePay: {
+        merchantCountryCode: 'US',
+        currencyCode: 'usd',
+        testEnv: true,
+      }
+    });
+    if (!error) {
+      setLoading(true);
+    }
+  };
+
+  const openPaymentSheet = async () => {
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      Alert.alert('Success', 'Your order is confirmed!');
+    }
+  };
+
+  useEffect(() => {
+    initializePaymentSheet();
+  }, []);
 
   useEffect(() => {
     loadCartItems();
@@ -62,6 +128,9 @@ const ShoppingCartPage = () => {
   );
 
   return (
+    <StripeProvider
+    publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    merchantIdentifier={'merchant.com.fynspo'}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Shopping Cart</Text>
@@ -79,13 +148,14 @@ const ShoppingCartPage = () => {
           />
           <View style={styles.totalContainer}>
             <Text style={styles.totalText}>Total: ${calculateTotal()}</Text>
-            <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
+            <TouchableOpacity style={styles.checkoutButton} onPress={openPaymentSheet}>
               <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
             </TouchableOpacity>
           </View>
         </>
       )}
     </SafeAreaView>
+    </StripeProvider>
   );
 };
 
