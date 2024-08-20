@@ -46,6 +46,13 @@
         "photosPermission": "fynspo uses the photo library to upload pictures of outfits or clothes in order to find similar items.",
         "savePhotosPermission": "fynspo uses the photo library to save pictures of outfits or clothes for user's to view later."
       }
+    ], 
+    [
+      "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.fynspo",
+          "enableGooglePay": true
+        }
     ],
     [
       "expo-camera",
