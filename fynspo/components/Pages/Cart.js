@@ -59,6 +59,7 @@ const ShoppingCartPage = () => {
   };
 
   const openPaymentSheet = async () => {
+    initializePaymentSheet();
     const { error } = await presentPaymentSheet();
 
     if (error) {
@@ -68,9 +69,9 @@ const ShoppingCartPage = () => {
     }
   };
 
-  useEffect(() => {
-    initializePaymentSheet();
-  }, []);
+  // useEffect(() => {
+  //   initializePaymentSheet();
+  // }, []);
 
   useEffect(() => {
     loadCartItems();
@@ -129,7 +130,7 @@ const ShoppingCartPage = () => {
 
   return (
     <StripeProvider
-    publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    publishableKey={'pk_test_51PlDzmDfJffGPw9ZxRT6Zp6tj5lhBUMr4vxKDV2Wik2KbkYymW2mo0eotiwJChBHeZQvjde97kFNfxeWpZu8hwVe006eZVOPIi'}
     merchantIdentifier={'merchant.com.fynspo'}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
