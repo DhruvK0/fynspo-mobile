@@ -55,6 +55,8 @@ const ItemComponent = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInBag, setIsInBag] = useState(false);
+  const [isSizeModalVisible, setIsSizeModalVisible] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(null);
 
   useEffect(() => {
     loadItemState();
@@ -84,11 +86,27 @@ const ItemComponent = ({ item }) => {
     await saveItemState(item, newFavoriteState, isInBag);
   };
 
-  const toggleBag = async (event) => {
+  const toggleSizeModal = async (event) => {
+    event.stopPropagation();
+    if (isInBag) {
+      const newBagState = !isInBag;
+      await saveItemState(item, isFavorite, newBagState);
+    } else {
+    setIsSizeModalVisible(true);
+    }
+  };
+
+  //pass the selected size to the selectSize function
+  const selectSize = async (event, size) => {
     event.stopPropagation();
     const newBagState = !isInBag;
-    await saveItemState(item, isFavorite, newBagState);
+    await saveItemState({...item, quantity: 1, selected_size: size}, isFavorite, newBagState);
+    setIsSizeModalVisible(false);
   };
+
+  const availableSizes = Object.entries(item.apiItem)
+    .filter(([key, value]) => key.startsWith('size_') && value === 2)
+    .map(([key]) => key.replace('size_', ''));
 
   return (
     <TouchableOpacity onPress={toggleModal} style={[styles.itemContainer, item.style]}>
@@ -101,6 +119,28 @@ const ItemComponent = ({ item }) => {
             color={isFavorite ? "#8400ff" : "white"} 
         />
         </TouchableOpacity>
+        <Modal animationType="slide" transparent={true} visible={isSizeModalVisible} onRequestClose={() => setIsSizeModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Size</Text>
+            {availableSizes.map((size) => (
+              <TouchableOpacity
+                key={size}
+                style={styles.sizeOption}
+                onPress={(event) => selectSize(event, size)}
+                // disabled={quantity === 0}
+              >
+                <Text style={[styles.sizeOptionText]}>
+                  {size}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => setIsSizeModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       </View>
       <View style={styles.infoContainer}>
         <View style={styles.textContainer}>
@@ -109,7 +149,7 @@ const ItemComponent = ({ item }) => {
         </View>
         <View style={styles.bottomRow}>
           <Text style={styles.priceText}>${item.price}</Text>
-          <TouchableOpacity style={styles.cartButton} onPress={toggleBag}>
+          <TouchableOpacity style={styles.cartButton} onPress={toggleSizeModal}>
             <Ionicons 
               name={isInBag ? "bag-check" : "bag-add-outline"} 
               size={24} 
@@ -181,6 +221,44 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     // padding: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  sizeOption: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sizeOptionText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  disabledText: {
+    color: '#999',
+  },
+  closeButton: {
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
   },
 });
 
