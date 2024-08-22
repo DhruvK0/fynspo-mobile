@@ -87,7 +87,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
     }
 
     if (!isInBag) {
-      await saveItemState({...item, selected_size: selectedSize}, true, true);
+      await saveItemState({...item, selected_size: selectedSize, quantity: 1}, true, true);
       setIsInBag(true);
     }
   };
