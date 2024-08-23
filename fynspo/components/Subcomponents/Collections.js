@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, SafeAreaView, Animated, PanResponder } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import { View, StyleSheet, FlatList, Dimensions, SafeAreaView, Animated } from 'react-native';
 import CollectionCard from '../Reusable/CollectionCard';
 import SubCollectionsView from '../Reusable/SubCollectionsView';
 import ItemsView from '../Reusable/ItemsView';
@@ -27,41 +27,7 @@ const CollectionsView = () => {
     'Shop By Trend': ['Vintage', 'Minimalist', 'Bohemian', 'Streetwear', 'Athleisure', 'Sustainable'],
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 20;
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.dx > 0) {
-          if (currentItemView) {
-            itemSlideAnim.setValue(gestureState.dx);
-          } else {
-            slideAnim.setValue(gestureState.dx);
-          }
-        }
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        if (gestureState.dx > width / 3) {
-          handleBack();
-        } else {
-          if (currentItemView) {
-            Animated.spring(itemSlideAnim, {
-              toValue: 0,
-              useNativeDriver: true,
-            }).start();
-          } else {
-            Animated.spring(slideAnim, {
-              toValue: 0,
-              useNativeDriver: true,
-            }).start();
-          }
-        }
-      },
-    })
-  ).current;
-
-  const navigateTo = (screen) => {
+  const navigateTo = useCallback((screen) => {
     if (screen.type === 'subcollection') {
       setCurrentItemView(screen);
       Animated.timing(itemSlideAnim, {
@@ -77,9 +43,9 @@ const CollectionsView = () => {
         useNativeDriver: true,
       }).start();
     }
-  };
+  }, [itemSlideAnim, slideAnim]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentItemView) {
       Animated.timing(itemSlideAnim, {
         toValue: width,
@@ -99,9 +65,9 @@ const CollectionsView = () => {
         slideAnim.setValue(width);
       });
     }
-  };
+  }, [currentItemView, itemSlideAnim, slideAnim]);
 
-  const renderMainContent = () => (
+  const renderMainContent = useCallback(() => (
     <View style={styles.mainContent}>
       <FlatList
         data={collections}
@@ -115,9 +81,9 @@ const CollectionsView = () => {
         contentContainerStyle={styles.listContainer}
       />
     </View>
-  );
+  ), [collections, navigateTo]);
 
-  const renderScreen = (screen, index) => {
+  const renderScreen = useCallback((screen, index) => {
     const animatedStyle = {
       transform: [{ translateX: slideAnim }],
       opacity: slideAnim.interpolate({
@@ -127,7 +93,7 @@ const CollectionsView = () => {
     };
 
     return (
-      <Animated.View key={index} style={[StyleSheet.absoluteFill, animatedStyle]} {...panResponder.panHandlers}>
+      <Animated.View key={index} style={[StyleSheet.absoluteFill, animatedStyle]}>
         {screen.type === 'collection' && (
           <SubCollectionsView
             title={screen.title}
@@ -138,9 +104,9 @@ const CollectionsView = () => {
         )}
       </Animated.View>
     );
-  };
+  }, [slideAnim, subCollections, navigateTo, handleBack]);
 
-  const renderItemView = () => {
+  const renderItemView = useCallback(() => {
     if (!currentItemView) return null;
 
     const animatedStyle = {
@@ -152,14 +118,14 @@ const CollectionsView = () => {
     };
 
     return (
-      <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]} {...panResponder.panHandlers}>
+      <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
         <ItemsView
           title={currentItemView.title}
           onBack={handleBack}
         />
       </Animated.View>
     );
-  };
+  }, [currentItemView, itemSlideAnim, handleBack]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
