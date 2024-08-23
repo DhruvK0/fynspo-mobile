@@ -1,15 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import ForYouPage from '../Subcomponents/ForYou';
 
 const ItemsView = ({ title, onBack }) => {
   return (
     <View style={styles.subContent}>
-      <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Ionicons name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.fillerText}>This is a placeholder for the items in this subcollection. You can add your content here later.</Text>
+        <View style={styles.backButtonContainer}>
+            <TouchableOpacity style={styles.backButton} onPress={onBack}>
+                <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+        </View>
+        <ForYouPage />
     </View>
   );
 };
@@ -33,6 +35,9 @@ const styles = StyleSheet.create({
     left: 10,
     zIndex: 1,
   },
+  backButtonContainer: {
+    marginBottom: 40,
+    },
   fillerText: {
     color: '#fff',
     fontSize: 16,
