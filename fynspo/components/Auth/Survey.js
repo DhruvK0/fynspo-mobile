@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import { createUser } from '../../utils/requests';
 
 const fashion_types = { 
   "Men's Fashion": 'M',
@@ -29,12 +30,14 @@ export function SurveyScreen({ onComplete, isEditing = false }) {
       Alert.alert("Selection Required", "Please select at least one fashion trend before completing the survey.");
     } else {
     try {
+      await createUser(user.id)
       await user.update({
         unsafeMetadata: { 
           surveyCompleted: true,
           fashionPreference,
           priceRange,
-          fashionTrends
+          fashionTrends,
+          dbCreated: true,
         },
       });
       onComplete();
