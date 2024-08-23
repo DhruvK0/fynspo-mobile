@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://mock-apis-fex9.onrender.com';
+const LIVE_API_URL = 'https://backend-server-8doz.onrender.com';
 
 export const FetchService = {
   getTrendingItems: async (page = 1, filters = {}) => {
@@ -55,3 +56,42 @@ export const getFilters = async () => {
     return {};
   }
 };
+
+export const fetchPaymentSheetParams = async () => {
+  const response = await fetch(`${LIVE_API_URL}/payment-sheet`, {
+      method: 'POST',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+  });
+  const { paymentIntent, ephemeralKey, customer } = await response.json();
+
+  return {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+  }
+};
+
+export async function createUser(uid) {
+  const data = { uid: uid };
+
+  try {
+    const response = await fetch(LIVE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+}
