@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import { SurveyScreen } from './Auth/Survey';
 import SvgComponent from './NavBarIcons';
 import TikTokStyleComponent from './Pages/Shopping';
 import ShoppingCartPage from './Pages/Cart';
+import { createUser } from '../utils/requests';
 
 const Tab = createBottomTabNavigator();
 
@@ -36,9 +37,28 @@ function TrackedScreen({ children, route }) {
 export default function MainFlow() {
   const { user } = useUser();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
+  const [dbCreated, setDbCreated] = useState(false);
+
+  const checkDbCreated = async () => {
+    if (!user.unsafeMetadata.dbCreated) {
+      try {
+        await createUser(user.id);
+        await user.update({ unsafeMetadata: { ...user.unsafeMetadata, dbCreated: true } });
+        setDbCreated(true);
+      } catch (error) {
+        // Handle the error appropriately
+        await createUser(user.id);
+      }
+    } else {
+      setDbCreated(true);
+    }
+  };
 
   useEffect(() => {
     if (user) {
+      //check if dbCreated is false or undefined and if so call createUser request with user.id
+      //then set dbCreated to true
+      checkDbCreated();
       setSurveyCompleted(user.unsafeMetadata.surveyCompleted || false);
     }
   }, [user]);
@@ -48,7 +68,10 @@ export default function MainFlow() {
       <SignedIn>
         {!surveyCompleted ? (
           <SurveyScreen onComplete={() => setSurveyCompleted(true)} />
-        ) : (
+        ) : !dbCreated ? 
+        (<View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#8400ff" />
+          </View>) : (
           <NavigationContainer>
             <Tab.Navigator
               screenOptions={({ route }) => ({
@@ -130,5 +153,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
