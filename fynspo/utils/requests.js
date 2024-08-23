@@ -77,7 +77,7 @@ export async function createUser(uid) {
   const data = { uid: uid };
 
   try {
-    const response = await fetch(LIVE_API_URL, {
+    const response = await fetch(`${LIVE_API_URL}/create_user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -90,6 +90,7 @@ export async function createUser(uid) {
     }
 
     const result = await response.json();
+    console.log('User created:', result);
     return result;
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
