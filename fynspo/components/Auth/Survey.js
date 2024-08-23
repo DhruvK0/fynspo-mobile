@@ -30,14 +30,14 @@ export function SurveyScreen({ onComplete, isEditing = false }) {
       Alert.alert("Selection Required", "Please select at least one fashion trend before completing the survey.");
     } else {
     try {
-      await createUser(user.id)
+      const createUserResponse = await createUser(user.id)
       await user.update({
         unsafeMetadata: { 
           surveyCompleted: true,
           fashionPreference,
           priceRange,
           fashionTrends,
-          dbCreated: true,
+          dbCreated: createUserResponse ? true : false,
         },
       });
       onComplete();
