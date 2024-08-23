@@ -5,6 +5,7 @@ import { AddressSheet, AddressSheetError } from '@stripe/stripe-react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FastImage from 'react-native-fast-image';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
+import { fetchPaymentSheetParams } from '../../utils/requests';
 
 const { width } = Dimensions.get('window');
 
@@ -13,23 +14,6 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
   const [addressSheetVisible, setAddressSheetVisible] = useState(false);
   const [address, setAddress] = useState(null);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-
-
-  const fetchPaymentSheetParams = async () => {
-    const response = await fetch('https://backend-server-8doz.onrender.com/payment-sheet', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-    });
-    const { paymentIntent, ephemeralKey, customer } = await response.json();
-
-    return {
-        paymentIntent,
-        ephemeralKey,
-        customer,
-    };
-    };
 
   const initializePaymentSheet = async () => {
     const {
