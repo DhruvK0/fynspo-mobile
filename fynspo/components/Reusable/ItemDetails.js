@@ -60,7 +60,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
     outputRange: [0, 0, height],
   });
 
-  const images = JSON.parse(item.apiItem.images);
+  const images = item.apiItem.images
 
   useEffect(() => {
     loadItemState();
