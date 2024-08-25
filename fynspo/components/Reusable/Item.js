@@ -105,7 +105,7 @@ const ItemComponent = ({ item }) => {
   };
 
   const availableSizes = Object.entries(item.apiItem)
-    .filter(([key, value]) => key.startsWith('size_') && value === 2)
+    .filter(([key, value]) => key.startsWith('size_') && value === "2")
     .map(([key]) => key.replace('size_', ''));
 
   return (
