@@ -1,34 +1,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, StyleSheet, SafeAreaView, View, Text } from 'react-native';
-import CarouselComponent from '../Reusable/Carousel';
 import SplashCarouselComponent from '../Reusable/SplashCarousel';
-import { FetchService, getFilters } from '../../utils/requests';
+import { getUserRecs } from '../../utils/requests';
+import { useUser } from '@clerk/clerk-expo'
 
 const ForYouPage = () => {
-  const [trendingItems, setTrendingItems] = useState([]);
+  const [categoryData, setCategoryData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState({});
+  const { user } = useUser();
+
+  const categories = [
+    'shirt', 'blouse', 'tank top', 'top', 't-shirt', 'sweatshirt', 'sweater',
+    'cardigan', 'vest', 'jacket', 'pants', 'shorts', 'skirt', 'coat', 'dress',
+    'jumpsuit', 'shoe', 'socks', 'necklace', 'bracelet', 'earrings', 'ring',
+    'body chain', 'hat', 'sunglasses', 'underwear', 'swimwear', 'bag', 'other'
+  ];
 
   useEffect(() => {
-    loadFilters();
+    fetchAllCategoryData();
   }, []);
 
-  useEffect(() => {
-    fetchTrendingItems();
-  }, [filters]);
-
-  const loadFilters = async () => {
-    const savedFilters = await getFilters();
-    setFilters(savedFilters);
-  };
-
-  const fetchTrendingItems = async () => {
+  const fetchAllCategoryData = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const data = await FetchService.getTrendingItems(1, filters);
-      setTrendingItems(data);
+      const uid = user.id; // Replace with actual user ID
+      const dataPromises = categories.map(category => 
+        getUserRecs(uid, category, user.unsafeMetadata.fashionPreference, null, null, null)
+      );
+      const results = await Promise.all(dataPromises);
+      const newCategoryData = {};
+      categories.forEach((category, index) => {
+        newCategoryData[category] = results[index];
+      });
+      setCategoryData(newCategoryData);
     } catch (error) {
-      console.error('Error fetching trending items:', error);
+      console.error('Error fetching category data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -43,28 +49,20 @@ const ForYouPage = () => {
     price: apiItem.price,
   }), []);
 
-  const getItemsForCategory = useCallback((offset = 0, page = 0) => {
-    const startIndex = (offset + page) * 10 % trendingItems.length;
-    const endIndex = startIndex + 10;
-    return trendingItems
-      .concat(trendingItems) // Duplicate the array to allow wrapping around
+  const getItemsForCategory = useCallback((category, page = 0) => {
+    const items = categoryData[category] || [];
+    const startIndex = page * 10 % items.length;
+    return items
+      .concat(items) // Duplicate the array to allow wrapping around
       .slice(startIndex, startIndex + 10)
       .map(mapApiItemToCarouselItem);
-  }, [trendingItems, mapApiItemToCarouselItem]);
+  }, [categoryData, mapApiItemToCarouselItem]);
 
-  const fetchItemsForCategory = useCallback((offset) => async (page) => {
+  const fetchItemsForCategory = useCallback((category) => async (page) => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
-    return getItemsForCategory(offset, page);
+    return getItemsForCategory(category, page);
   }, [getItemsForCategory]);
-
-  const categories = [
-    { title: 'Just for you', offset: 0 },
-    { title: 'Tops', offset: 2 },
-    { title: 'Trending', offset: 4 },
-    { title: 'Bottoms', offset: 6 },
-    { title: 'Shoes', offset: 8 },
-  ];
 
   if (isLoading) {
     return (
@@ -82,9 +80,9 @@ const ForYouPage = () => {
         {categories.map((category, index) => (
           <SplashCarouselComponent 
             key={index} 
-            title={category.title} 
-            fetchItems={fetchItemsForCategory(category.offset)}
-            initialItems={getItemsForCategory(category.offset)}
+            title={category.charAt(0).toUpperCase() + category.slice(1)} 
+            fetchItems={fetchItemsForCategory(category)}
+            initialItems={getItemsForCategory(category)}
           />
         ))}
       </ScrollView>
