@@ -15,6 +15,7 @@ import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 import { saveItemState, getItemState } from '../../utils/storage';
 import CarouselComponent from '../Reusable/Carousel';
+import { getSimilarItems } from '../../utils/requests';
 
 const { width, height } = Dimensions.get('window');
 const NAVBAR_HEIGHT = 50; // Height of the navbar
@@ -54,8 +55,9 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const panY = useRef(new Animated.Value(0)).current;
+  const fynspo_id = item.apiItem.fynspo_id;
 
-  const translateY = panY.interpolate({
+   const translateY = panY.interpolate({
     inputRange: [-1, 0, height],
     outputRange: [0, 0, height],
   });
@@ -108,8 +110,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
 
   const fetchSimilarItems = async (page) => {
     try {
-      const response = await fetch('https://mock-apis-fex9.onrender.com/get_trending_items');
-      const data = await response.json();
+      const data = await getSimilarItems(fynspo_id);
       // Simulate pagination by slicing the data
       const startIndex = page * 10;
       const endIndex = startIndex + 10;
