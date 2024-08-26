@@ -93,7 +93,7 @@ export async function createUser(uid) {
     console.log('User created:', result);
     return result;
   } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
+    console.error('There was a problem with the createUser fetch operation:', error);
   }
 }
 
@@ -116,7 +116,7 @@ export async function userInteraction(uid, fynspo_id, interaction_type, duration
     const result = await response.json();
     console.log('User interaction recorded:', result);
   } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
+    console.error('There was a problem with the user interaction fetch operation:', error);
   }
 }
 
@@ -164,6 +164,6 @@ export async function getSimilarItems(fynspo_id) {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
+    console.error('There was a problem with the similar items fetch operation:', error);
   }
 }

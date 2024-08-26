@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,9 @@ import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { saveItemState, getItemState, subscribeToChanges } from '../../utils/storage';
+import { userInteraction } from '../../utils/requests';
 import ItemDetails from './ItemDetails';
+import { useUser } from '@clerk/clerk-expo';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
@@ -57,6 +59,8 @@ const ItemComponent = ({ item }) => {
   const [isInBag, setIsInBag] = useState(false);
   const [isSizeModalVisible, setIsSizeModalVisible] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
+  const { user } = useUser();
+  const modalOpenTimeRef = useRef(null);
 
   useEffect(() => {
     loadItemState();
@@ -76,7 +80,19 @@ const ItemComponent = ({ item }) => {
     setIsInBag(storedInCart);
   };
 
-  const toggleModal = () => {
+  const toggleModal = async () => {
+    if (!isModalVisible) {
+      // Modal is being opened
+      modalOpenTimeRef.current = Date.now();
+    } else {
+      // Modal is being closed
+      const duration = (Date.now() - modalOpenTimeRef.current) / 1000; // Convert to seconds
+      try {
+        await userInteraction(user.id, item.id, 'view', duration);
+      } catch (error) {
+        console.error('Error logging user interaction:', error);
+      }
+    }
     setIsModalVisible(!isModalVisible);
   };
 
@@ -84,6 +100,9 @@ const ItemComponent = ({ item }) => {
     event.stopPropagation();
     const newFavoriteState = !isFavorite;
     await saveItemState(item, newFavoriteState, isInBag);
+    if (newFavoriteState) {
+      await userInteraction(user.id, item.id, 'like', 0);
+    }
   };
 
   const toggleSizeModal = async (event) => {
