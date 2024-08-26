@@ -96,3 +96,74 @@ export async function createUser(uid) {
     console.error('There was a problem with the fetch operation:', error);
   }
 }
+
+export async function userInteraction(uid, fynspo_id, interaction_type, duration) {
+  const data = { uid: uid, fynspo_id: fynspo_id, interaction_type: interaction_type, duration: duration };
+
+  try {
+    const response = await fetch(`${LIVE_API_URL}/user_interaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('User interaction recorded:', result);
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+}
+
+export async function getUserRecs(uid, category, sex, id_list, collection, collection_category) {
+  //only include the values that are not null
+  const data = { uid: uid, category: category, sex: sex, id_list: id_list, collection: collection, collection_category: collection_category };
+
+  try {
+    const response = await fetch(`${LIVE_API_URL}/get_user_recs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+}
+
+export async function getSimilarItems(fynspo_id) {
+  const data = { fynspo_id: fynspo_id };
+
+  try {
+    
+    const response = await fetch(`${LIVE_API_URL}/get_similar_items`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+}
