@@ -165,8 +165,8 @@ export async function getUserRecs(uid, category, sex, id_list, collection, colle
   }
 }
 
-export async function getSimilarItems(fynspo_id) {
-  const data = { fynspo_id: fynspo_id };
+export async function getSimilarItems(fynspo_id, sex) {
+  const data = { fynspo_id: fynspo_id, sex: sex };
 
   try {
     
