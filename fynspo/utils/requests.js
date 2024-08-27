@@ -73,6 +73,27 @@ export const fetchPaymentSheetParams = async () => {
   }
 };
 
+
+export async function getTrendingItems()  {
+  try {
+    const response = await fetch(`${LIVE_API_URL}/get_trending_items`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+}
+
 export async function createUser(uid) {
   const data = { uid: uid };
 
