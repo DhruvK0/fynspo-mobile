@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, StyleSheet, SafeAreaView, View, Text, RefreshControl } from 'react-native';
 import SplashCarouselComponent from '../Reusable/SplashCarousel';
-import { getUserRecs } from '../../utils/requests';
+import { getUserRecs, getTrendingItems } from '../../utils/requests';
 import { useUser } from '@clerk/clerk-expo'
 import { ActivityIndicator } from 'react-native-paper';
 
@@ -32,7 +32,9 @@ const ForYouPage = () => {
       const results = await Promise.all(dataPromises);
       const newCategoryData = {};
       categories.forEach((category, index) => {
-        newCategoryData[category] = results[index];
+        if (results[index] && results[index].length > 0) {
+          newCategoryData[category] = results[index];
+        }
       });
       setCategoryData(newCategoryData);
     } catch (error) {
@@ -82,6 +84,9 @@ const ForYouPage = () => {
     );
   }
 
+  //set the categoires with items value to the object kyes that have a value
+  const categoriesWithItems = Object.keys(categoryData).filter(category => categoryData[category].length > 0);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -91,19 +96,24 @@ const ForYouPage = () => {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor="#8400ff"
-            // title="Pull to refresh"
             titleColor="#fff"
           />
         }
       >
-        {categories.map((category, index) => (
-          <SplashCarouselComponent 
-            key={index} 
-            title={category.charAt(0).toUpperCase() + category.slice(1)} 
-            fetchItems={fetchItemsForCategory(category)}
-            initialItems={getItemsForCategory(category)}
-          />
-        ))}
+        {categoriesWithItems.length > 0 ? (
+          categoriesWithItems.map((category, index) => (
+            <SplashCarouselComponent 
+              key={index} 
+              title={category.charAt(0).toUpperCase() + category.slice(1)} 
+              fetchItems={fetchItemsForCategory(category)}
+              initialItems={getItemsForCategory(category)}
+            />
+          ))
+        ) : (
+          <View style={styles.noItemsContainer}>
+            <Text style={styles.noItemsText}>No items found for any category.</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -126,6 +136,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     bottom: 20,
+  },
+  noItemsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+  },
+  noItemsText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
