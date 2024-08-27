@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { saveItemState, getItemState } from '../../utils/storage';
 import CarouselComponent from '../Reusable/Carousel';
 import { getSimilarItems } from '../../utils/requests';
+import { useUser } from '@clerk/clerk-react';
 
 const { width, height } = Dimensions.get('window');
 const NAVBAR_HEIGHT = 50; // Height of the navbar
@@ -56,6 +57,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const panY = useRef(new Animated.Value(0)).current;
   const fynspo_id = item.apiItem.fynspo_id;
+  const { user } = useUser();
 
    const translateY = panY.interpolate({
     inputRange: [-1, 0, height],
@@ -110,7 +112,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
 
   const fetchSimilarItems = async (page) => {
     try {
-      const data = await getSimilarItems(fynspo_id);
+      const data = await getSimilarItems(fynspo_id, user.unsafeMetadata.fashionPreference);
       // Simulate pagination by slicing the data
       const startIndex = page * 10;
       const endIndex = startIndex + 10;
