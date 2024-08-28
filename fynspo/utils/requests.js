@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://mock-apis-fex9.onrender.com';
-const LIVE_API_URL = 'https://backend-server-8doz.onrender.com';
+const LIVE_API_URL = 'https://fynspo-backend.onrender.com';
 
 export const FetchService = {
   getTrendingItems: async (page = 1, filters = {}) => {
@@ -186,5 +186,22 @@ export async function getSimilarItems(fynspo_id, sex) {
     return result;
   } catch (error) {
     console.error('There was a problem with the similar items fetch operation:', error);
+  }
+}
+
+export async function search(query) {
+  const data = new URLSearchParams({ query: query });
+
+  try {
+    const response = await fetch(`${LIVE_API_URL}/search?${data.toString()}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the search fetch operation:', error);
   }
 }
