@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import ItemComponent from './Item';
 
 const { width, height } = Dimensions.get('window');
 const COLUMN_WIDTH = width / 2 - 15;
 
-const ItemGrid = ({ fetchItems, onRemoveItem, isCartView = false }) => {
+const ItemGrid = ({ fetchItems }) => {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -41,11 +41,6 @@ const ItemGrid = ({ fetchItems, onRemoveItem, isCartView = false }) => {
     }
   };
 
-  const handleRemoveItem = (itemId) => {
-    onRemoveItem(itemId);
-    setItems((prevItems) => prevItems.filter(item => item.id !== itemId));
-  };
-
   if (loading && items.length === 0) {
     return (
       <View style={styles.loadingContainer}>
@@ -67,14 +62,6 @@ const ItemGrid = ({ fetchItems, onRemoveItem, isCartView = false }) => {
               item={{...item, style: { width: COLUMN_WIDTH, marginBottom: 10 }}}
               style={{ width: COLUMN_WIDTH}}
             />
-            {isCartView && (
-              <TouchableOpacity 
-                style={styles.removeButton} 
-                onPress={() => handleRemoveItem(item.id)}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-            )}
           </View>
         ))}
       </View>
