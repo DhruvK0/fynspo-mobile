@@ -53,7 +53,7 @@ const ImageComponent = ({ source, style }) => {
   );
 };
 
-const ItemComponent = ({ item }) => {
+const ItemComponent = ({ item, previousCloseModal}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInBag, setIsInBag] = useState(false);
@@ -80,6 +80,27 @@ const ItemComponent = ({ item }) => {
     setIsInBag(storedInCart);
   };
 
+
+  const openModal = async () => {
+    if (previousCloseModal) {
+      previousCloseModal();
+    }
+
+    setIsModalVisible(true);
+    modalOpenTimeRef.current = Date.now();
+  }
+
+  const closeModal = async () => {
+    setIsModalVisible(false);
+    const duration = (Date.now() - modalOpenTimeRef.current) / 1000; // Convert to seconds
+    try {
+      await userInteraction(user.id, item.id, 'view', duration);
+    } catch (error) {
+      console.error('Error logging user interaction:', error);
+    }
+  }
+
+  
   const toggleModal = async () => {
     if (!isModalVisible) {
       // Modal is being opened
@@ -128,7 +149,7 @@ const ItemComponent = ({ item }) => {
     .map(([key]) => key.replace('size_', ''));
 
   return (
-    <TouchableOpacity onPress={toggleModal} style={[styles.itemContainer, item.style]}>
+    <TouchableOpacity onPress={openModal} style={[styles.itemContainer, item.style]}>
       <View style={styles.imageContainer}>
         <ImageComponent source={item.image} style={styles.image} />
         <TouchableOpacity style={styles.heartButton} onPress={toggleFavorite}>
@@ -181,9 +202,9 @@ const ItemComponent = ({ item }) => {
         animationType="none"
         transparent={true}
         visible={isModalVisible}
-        onRequestClose={toggleModal}
+        onRequestClose={closeModal}
       >
-        <ItemDetails item={item} closeModal={toggleModal} />
+        <ItemDetails item={item} closeModal={closeModal} />
       </Modal>
     </TouchableOpacity>
   );
