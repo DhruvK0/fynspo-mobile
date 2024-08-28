@@ -189,8 +189,8 @@ export async function getSimilarItems(fynspo_id, sex) {
   }
 }
 
-export async function search(query, id_list) {
-  const data = { query: query, id_list: id_list };
+export async function search(query, id_list, sex) {
+  const data = { query: query, id_list: id_list, sex: sex };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/search`, {

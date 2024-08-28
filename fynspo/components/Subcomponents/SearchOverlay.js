@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, TextInput, Animated, Keyboard, Acti
 import { Ionicons } from '@expo/vector-icons';
 import ItemGrid from '../Reusable/ItemGrid';
 import { search } from '../../utils/requests';
+import { useUser } from '@clerk/clerk-expo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,6 +15,7 @@ const SearchOverlay = ({ isOpen, searchPanX, closeSearch, insets }) => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [shownIds, setShownIds] = useState(new Set());
+  const { user } = useUser();
 
   const mapApiItemToCarouselItem = useCallback((apiItem) => ({
     apiItem,
@@ -56,7 +58,7 @@ const SearchOverlay = ({ isOpen, searchPanX, closeSearch, insets }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const results = await search(searchQuery, Array.from(shownIds));
+      const results = await search(searchQuery, Array.from(shownIds), user.unsafeMetadata.fashionPreference);
       if (Array.isArray(results) && results.length > 0) {
         const mappedResults = results.map(mapApiItemToCarouselItem);
         setSearchResults(mappedResults);
