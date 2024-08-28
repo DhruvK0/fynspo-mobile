@@ -189,11 +189,17 @@ export async function getSimilarItems(fynspo_id, sex) {
   }
 }
 
-export async function search(query) {
-  const data = new URLSearchParams({ query: query });
+export async function search(query, id_list) {
+  const data = { query: query, id_list: id_list };
 
   try {
-    const response = await fetch(`${LIVE_API_URL}/search?${data.toString()}`);
+    const response = await fetch(`${LIVE_API_URL}/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

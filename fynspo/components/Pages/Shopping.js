@@ -17,7 +17,6 @@ const TikTokStyleComponent = () => {
   const [activeTab, setActiveTab] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const searchPanX = useRef(new Animated.Value(width)).current;
@@ -42,28 +41,17 @@ const TikTokStyleComponent = () => {
     }
   };
 
-  useEffect(() => {
-    if (isSearchOpen) {
-      Animated.timing(searchPanX, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isSearchOpen]);
+  const animateSearchOverlay = (toValue) => {
+    Animated.timing(searchPanX, {
+      toValue,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const memoizedForYou = useMemo(() => <ForYouPage filters={selectedFilters} />, [selectedFilters]);
   const memoizedSaved = useMemo(() => <SavedPage />, []);
   const memoizedCollections = useMemo(() => <CollectionsView />, []);
-
-  const handleSearch = () => {
-    console.log('Searching for:', searchQuery);
-    // Implement search functionality here
-  };
-
-  const clearSearch = () => {
-    setSearchQuery('');
-  };
 
   const openFilter = () => {
     setIsFilterOpen(true);
@@ -75,15 +63,14 @@ const TikTokStyleComponent = () => {
 
   const openSearch = () => {
     setIsSearchOpen(true);
+    animateSearchOverlay(0);
   };
 
   const closeSearch = () => {
-    setIsSearchOpen(false);
-    Animated.timing(searchPanX, {
-      toValue: width,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    animateSearchOverlay(width);
+    setTimeout(() => {
+      setIsSearchOpen(false);
+    }, 300); // Wait for animation to complete before closing
   };
 
   return (
@@ -136,10 +123,6 @@ const TikTokStyleComponent = () => {
         isOpen={isSearchOpen}
         searchPanX={searchPanX}
         closeSearch={closeSearch}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearch={handleSearch}
-        clearSearch={clearSearch}
         insets={insets}
       />
     </SafeAreaView>
