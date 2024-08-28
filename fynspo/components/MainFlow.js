@@ -3,11 +3,10 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
-import { ClerkProvider, SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { PortalProvider } from '@gorhom/portal';
 import { track } from '@amplitude/analytics-react-native';
-import Feed from './Feed';
-import Home from './Home';
 import ProfileScreen from './Profile';
 import AuthContainer from './Auth/AuthContainer';
 import { SurveyScreen } from './Auth/Survey';
@@ -80,13 +79,19 @@ export default function MainFlow() {
 
                   if (route.name === 'Home') {
                     iconName = focused ? 'home' : 'home-outline';
-                  } else if (route.name === 'Camera') {
-                    iconName = focused ? 'camera' : 'camera-outline';
+                  } else if (route.name === 'Cart') {
+                    iconName = focused ? 'bag' : 'bag-outline';
                   } else if (route.name === 'Profile') {
                     iconName = focused ? 'person' : 'person-outline';
                   }
 
-                  return <SvgComponent name={iconName} size={size} color={color} />;  
+                  if (iconName != 'bag' && iconName != 'bag-outline') {
+                    return <SvgComponent name={iconName} size={size} color={color} />;
+                  } else {
+                    return <Ionicons name={iconName} size={36} color={'white'} />;
+                  }
+
+                  // return <SvgComponent name={iconName} size={size} color={color} />;  
                 },
                 headerShown: false,
                 tabBarActiveBackgroundColor: '#000',
@@ -110,7 +115,7 @@ export default function MainFlow() {
                   </TrackedScreen>
                 )}
               </Tab.Screen>
-              <Tab.Screen name="Camera">
+              <Tab.Screen name="Cart">
                 {(props) => (
                   <TrackedScreen route={props.route}>
                     {/* <Home {...props} /> */}
