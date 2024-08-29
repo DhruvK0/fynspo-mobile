@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ForYouPage from '../Subcomponents/ForYou';
-
 import SplashCarouselComponent from '../Reusable/SplashCarousel';
-import { FetchService, getFilters } from '../../utils/requests';
+import { getUserRecs } from '../../utils/requests';
+import { useUser } from '@clerk/clerk-expo';
+import { ActivityIndicator } from 'react-native-paper';
 
 const ItemsView = ({ title, onBack }) => {
+  console.log(title)
   return (
     <View style={styles.subContent}>
         <View style={styles.backButtonContainer}>
@@ -14,41 +15,85 @@ const ItemsView = ({ title, onBack }) => {
                 <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
         </View>
-        <ContentPage />
+        <ContentPage title={title} />
     </View>
   );
 };
 
 
-const ContentPage = () => {
-  const [trendingItems, setTrendingItems] = useState([]);
+const ContentPage = ({ title }) => {
+  const [categoryData, setCategoryData] = useState({});
+  const [displayedIds, setDisplayedIds] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadedCategories, setLoadedCategories] = useState(0);
+  const { user } = useUser();
 
-  useEffect(() => {
-    loadFilters();
-  }, []);
+  const categories = [
+    'shirt', 'blouse', 'tank top', 'top', 't-shirt', 'sweatshirt', 'sweater',
+    'cardigan', 'vest', 'jacket', 'pants', 'shorts', 'skirt', 'coat', 'dress',
+    'jumpsuit', 'shoe', 'socks', 'necklace', 'bracelet', 'earrings', 'ring',
+    'body chain', 'hat', 'sunglasses', 'underwear', 'swimwear', 'bag', 'other'
+  ];
 
-  useEffect(() => {
-    fetchTrendingItems();
-  }, [filters]);
+  const INITIAL_LOAD_COUNT = 5; // Number of categories to load initially
+  const LOAD_MORE_COUNT = 3; // Number of additional categories to load when scrolling
+  const loadingRef = useRef(false);
 
-  const loadFilters = async () => {
-    const savedFilters = await getFilters();
-    setFilters(savedFilters);
-  };
+  const fetchCategoryData = useCallback(async (category) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
 
-  const fetchTrendingItems = async () => {
     try {
-      setIsLoading(true);
-      const data = await FetchService.getTrendingItems(1, filters);
-      setTrendingItems(data);
+      const uid = user.id;
+      const result = await getUserRecs(uid, null, null, null, null, null, title);
+      if (result && result.length > 0) {
+        setCategoryData(prevData => ({
+          ...prevData,
+          [category]: result
+        }));
+        setDisplayedIds(prevIds => ({
+          ...prevIds,
+          [category]: result.map(item => item.fynspo_id)
+        }));
+        setLoadedCategories(prev => prev + 1);
+      }
     } catch (error) {
-      console.error('Error fetching trending items:', error);
+      console.error(`Error fetching data for category ${category}:`, error);
     } finally {
-      setIsLoading(false);
+      loadingRef.current = false;
     }
-  };
+  }, [user]);
+
+  const fetchInitialData = useCallback(async () => {
+    setIsLoading(true);
+    setLoadedCategories(0);
+    setCategoryData({});
+    setDisplayedIds({});
+
+    const initialCategories = categories.slice(0, INITIAL_LOAD_COUNT);
+    await Promise.all(initialCategories.map(fetchCategoryData));
+
+    setIsLoading(false);
+  }, [fetchCategoryData]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  const loadMoreCategories = useCallback(() => {
+    const nextCategoryIndex = loadedCategories;
+    if (nextCategoryIndex < categories.length) {
+      const categoriesToLoad = categories.slice(nextCategoryIndex, nextCategoryIndex + LOAD_MORE_COUNT);
+      categoriesToLoad.forEach(fetchCategoryData);
+    }
+  }, [loadedCategories, fetchCategoryData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchInitialData();
+    setRefreshing(false);
+  }, [fetchInitialData]);
 
   const mapApiItemToCarouselItem = useCallback((apiItem) => ({
     apiItem,
@@ -59,50 +104,104 @@ const ContentPage = () => {
     price: apiItem.price,
   }), []);
 
-  const getItemsForCategory = useCallback((offset = 0, page = 0) => {
-    const startIndex = (offset + page) * 10 % trendingItems.length;
-    const endIndex = startIndex + 10;
-    return trendingItems
-      .concat(trendingItems) // Duplicate the array to allow wrapping around
+  const getItemsForCategory = useCallback((category, page = 0) => {
+    const items = categoryData[category] || [];
+    const startIndex = page * 10 % items.length;
+    return items
       .slice(startIndex, startIndex + 10)
       .map(mapApiItemToCarouselItem);
-  }, [trendingItems, mapApiItemToCarouselItem]);
+  }, [categoryData, mapApiItemToCarouselItem]);
 
-  const fetchItemsForCategory = useCallback((offset) => async (page) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return getItemsForCategory(offset, page);
-  }, [getItemsForCategory]);
+  const fetchItemsForCategory = useCallback((category) => async (page) => {
+    try {
+      const uid = user.id;
+      const shownIds = displayedIds[category] || [];
+      const newItems = await getUserRecs(
+        uid,
+        category,
+        user.unsafeMetadata.fashionPreference,
+        shownIds,
+        null,
+        null,
+        title
+      );
 
-  const categories = [
-    { title: 'Just for you', offset: 0 },
-    { title: 'Tops', offset: 2 },
-    { title: 'Trending', offset: 4 },
-    { title: 'Bottoms', offset: 6 },
-    { title: 'Shoes', offset: 8 },
-  ];
+      if (newItems && newItems.length > 0) {
+        setCategoryData(prevData => ({
+          ...prevData,
+          [category]: [...(prevData[category] || []), ...newItems]
+        }));
+        setDisplayedIds(prevIds => ({
+          ...prevIds,
+          [category]: [...(prevIds[category] || []), ...newItems.map(item => item.fynspo_id)]
+        }));
+        return newItems.map(mapApiItemToCarouselItem);
+      } else {
+        return getItemsForCategory(category, page);
+      }
+    } catch (error) {
+      console.error('Error fetching new items for category:', error);
+      return getItemsForCategory(category, page);
+    }
+  }, [user, displayedIds, getItemsForCategory, mapApiItemToCarouselItem]);
+
+  const handleScroll = useCallback((event) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 20;
+    if (layoutMeasurement.height + contentOffset.y >=
+        contentSize.height - paddingToBottom) {
+      loadMoreCategories();
+    }
+  }, [loadMoreCategories]);
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#8400ff" />
+          <Text style={styles.loadingText}>Getting Your Clothes</Text>
+          <ActivityIndicator size="large" color="#8400ff" />
         </View>
       </SafeAreaView>
     );
   }
 
+  const categoriesWithItems = Object.keys(categoryData).filter(category => categoryData[category].length > 0);
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {categories.map((category, index) => (
-          <SplashCarouselComponent 
-            key={index} 
-            title={category.title} 
-            fetchItems={fetchItemsForCategory(category.offset)}
-            initialItems={getItemsForCategory(category.offset)}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#8400ff"
+            titleColor="#fff"
           />
-        ))}
+        }
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
+      >
+        {categoriesWithItems.length > 0 ? (
+          categoriesWithItems.map((category, index) => (
+            <SplashCarouselComponent 
+              key={index} 
+              title={category.charAt(0).toUpperCase() + category.slice(1)} 
+              fetchItems={fetchItemsForCategory(category)}
+              initialItems={getItemsForCategory(category)}
+            />
+          ))
+        ) : (
+          <View style={styles.noItemsContainer}>
+            <Text style={styles.noItemsText}>No items found for any category.</Text>
+          </View>
+        )}
+        {loadedCategories < categories.length && (
+          <View style={styles.loadingMoreContainer}>
+            <ActivityIndicator size="small" color="#8400ff" />
+            <Text style={styles.loadingMoreText}>Loading more categories...</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -151,6 +250,28 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#fff',
     fontSize: 18,
+    marginBottom: 20,
+  },
+  noItemsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+  },
+  noItemsText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  loadingMoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingMoreText: {
+    color: '#fff',
+    fontSize: 14,
+    marginLeft: 10,
   },
 });
 

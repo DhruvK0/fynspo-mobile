@@ -141,9 +141,9 @@ export async function userInteraction(uid, fynspo_id, interaction_type, duration
   }
 }
 
-export async function getUserRecs(uid, category, sex, id_list, collection, collection_category) {
+export async function getUserRecs(uid, category, sex, id_list, collection, collection_category, brand) {
   //only include the values that are not null
-  const data = { uid: uid, category: category, sex: sex, id_list: id_list, collection: collection, collection_category: collection_category };
+  const data = { uid: uid, category: category, sex: sex, id_list: id_list, collection: collection, collection_category: collection_category, brand: brand};
 
   try {
     const response = await fetch(`${LIVE_API_URL}/get_user_recs`, {

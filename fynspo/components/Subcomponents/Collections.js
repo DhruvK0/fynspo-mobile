@@ -22,8 +22,28 @@ const CollectionsView = () => {
   ];
 
   const subCollections = {
-    'Shop By Brand': ['Nike', 'Adidas', 'Puma', 'Reebok', 'Under Armour', 'New Balance'],
-    'Shop By Occasion': ['Casual', 'Formal', 'Sport', 'Beach', 'Party', 'Work'],
+    'Shop By Brand': [
+        "Alo Yoga",
+        "Beyond Yoga",
+        "Brandy Melville",
+        "Edikted",
+        "Ed Hardy",
+        "Essentials",
+        "Garage",
+        "Lululemon",
+        "Meshki",
+        "Motel Rocks",
+        "Nuuds",
+        "Oh Polly",
+        "Princess Polly",
+        "Revice Denim",
+        "Selfie Leslie",
+        "Stussy",
+        "That's So Fetch",
+        "Uniqlo",
+        "White Fox Boutique"
+    ],
+    'Shop By Occasion': [],
     'Shop By Trend': ['Vintage', 'Minimalist', 'Bohemian', 'Streetwear', 'Athleisure', 'Sustainable'],
   };
 
