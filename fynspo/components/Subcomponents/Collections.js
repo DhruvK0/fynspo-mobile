@@ -1,17 +1,20 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, SafeAreaView, Animated } from 'react-native';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { View, StyleSheet, FlatList, Dimensions, SafeAreaView, Animated, ActivityIndicator } from 'react-native';
 import CollectionCard from '../Reusable/CollectionCard';
 import SubCollectionsView from '../Reusable/SubCollectionsView';
 import ItemsView from '../Reusable/ItemsView';
+import { getCollections } from '../../utils/requests';
 
 const { width, height } = Dimensions.get('window');
 
 const BOTTOM_NAV_HEIGHT = 50;
-const TOP_TAB_HEIGHT = 50;
+const TOP_TAB_HEIGHT = 20;
 
 const CollectionsView = () => {
   const [navigationStack, setNavigationStack] = useState([]);
   const [currentItemView, setCurrentItemView] = useState(null);
+  const [subCollections, setSubCollections] = useState({});
+  const [loading, setLoading] = useState(false);
   const slideAnim = useRef(new Animated.Value(width)).current;
   const itemSlideAnim = useRef(new Animated.Value(width)).current;
 
@@ -21,31 +24,25 @@ const CollectionsView = () => {
     'Shop By Trend'
   ];
 
-  const subCollections = {
-    'Shop By Brand': [
-        "Alo Yoga",
-        "Beyond Yoga",
-        "Brandy Melville",
-        "Edikted",
-        "Ed Hardy",
-        "Essentials",
-        "Garage",
-        "Lululemon",
-        "Meshki",
-        "Motel Rocks",
-        "Nuuds",
-        "Oh Polly",
-        "Princess Polly",
-        "Revice Denim",
-        "Selfie Leslie",
-        "Stussy",
-        "That's So Fetch",
-        "Uniqlo",
-        "White Fox Boutique"
-    ],
-    'Shop By Occasion': [],
-    'Shop By Trend': ['Vintage', 'Minimalist', 'Bohemian', 'Streetwear', 'Athleisure', 'Sustainable'],
-  };
+  const fetchBrands = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Simulating an API call with setTimeout
+      const liveBrands = await getCollections('brand');
+      setSubCollections(prev => ({
+        ...prev,
+        'Shop By Brand': liveBrands
+      }));
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBrands();
+  }, [fetchBrands]);
 
   const navigateTo = useCallback((screen) => {
     if (screen.type === 'subcollection') {
@@ -89,19 +86,23 @@ const CollectionsView = () => {
 
   const renderMainContent = useCallback(() => (
     <View style={styles.mainContent}>
-      <FlatList
-        data={collections}
-        renderItem={({ item }) => (
-          <CollectionCard 
-            title={item} 
-            onPress={() => navigateTo({ type: 'collection', title: item })}
-          />
-        )}
-        keyExtractor={(item) => item}
-        contentContainerStyle={styles.listContainer}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#8400ff" />
+      ) : (
+        <FlatList
+          data={collections}
+          renderItem={({ item }) => (
+            <CollectionCard 
+              title={item} 
+              onPress={() => navigateTo({ type: 'collection', title: item })}
+            />
+          )}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
     </View>
-  ), [collections, navigateTo]);
+  ), [collections, navigateTo, loading]);
 
   const renderScreen = useCallback((screen, index) => {
     const animatedStyle = {
@@ -117,7 +118,7 @@ const CollectionsView = () => {
         {screen.type === 'collection' && (
           <SubCollectionsView
             title={screen.title}
-            subCollections={subCollections[screen.title]}
+            subCollections={subCollections[screen.title] || []}
             onItemPress={(item) => navigateTo({ type: 'subcollection', title: item })}
             onBack={handleBack}
           />
@@ -171,9 +172,10 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     paddingHorizontal: 10,
+    justifyContent: 'center',
   },
   listContainer: {
-    paddingVertical: 10,
+    // paddingVertical: 10,
   },
 });
 
