@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated, Dimensions, PanResponder, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCollections } from '../../utils/requests';
 
 const { height, width } = Dimensions.get('window');
 const DRAWER_HEIGHT = height * 0.75;
@@ -9,6 +10,8 @@ const DRAWER_HEIGHT = height * 0.75;
 const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, selectedFilters, setSelectedFilters }) => {
   const [activeFilter, setActiveFilter] = useState(null);
   const translateY = useRef(new Animated.Value(DRAWER_HEIGHT)).current;
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(false);
   
   const panResponder = useRef(
     PanResponder.create({
@@ -37,6 +40,7 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
         useNativeDriver: true,
         bounciness: 0,
       }).start();
+      fetchBrands();
     } else {
       Animated.spring(translateY, {
         toValue: DRAWER_HEIGHT,
@@ -55,6 +59,7 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
   ];
 
   const filterOptions = {
+    Brand: brands,
     Size: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     Price: ['$0-$50', '$50-$100', '$100-$200', '$200+'],
     Gender: ['Men', 'Women', 'Unisex'],
@@ -92,6 +97,19 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
       console.error('Error saving filters:', error);
     }
   };
+
+  const fetchBrands = async () => {
+  setLoading(true);
+  try {
+    // Simulating an API call with setTimeout
+    const live_brands = await getCollections("brand");
+    setBrands(live_brands);
+  } catch (error) {
+    console.error('Error fetching brands:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const renderFilterModal = () => {
     if (!activeFilter) return null;
