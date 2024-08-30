@@ -90,7 +90,7 @@ export async function getTrendingItems()  {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
+    console.error('There was a problem with the fetch operation in getting trending items:', error);
   }
 }
 
@@ -161,7 +161,7 @@ export async function getUserRecs(uid, category, sex, id_list, collection, colle
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
+    console.error('There was a problem with the fetch operation in getting user recs:', error);
   }
 }
 
@@ -231,6 +231,6 @@ export async function getCollections(collection) {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
+    console.error('There was a problem with the fetch operation in getting collections:', error);
   }
 }
