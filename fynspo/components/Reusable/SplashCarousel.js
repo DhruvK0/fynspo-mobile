@@ -115,6 +115,8 @@ const SplashCarouselComponent = ({ title, fetchItems }) => {
           <LinearGradient 
                 colors={['#00000000', '#000000']} 
                 style={styles.gradient}
+                start={{ x: 0, y: 0.3 }}
+                end={{ x: 0, y: 1 }}
           />
           <TouchableOpacity style={styles.categoryButton} onPress={handleOpenGrid}>
             <Text style={styles.categoryText}>{title}</Text>
