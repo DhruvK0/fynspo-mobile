@@ -234,3 +234,26 @@ export async function getCollections(collection) {
     console.error('There was a problem with the fetch operation in getting collections:', error);
   }
 }
+
+export async function getShippingInformation(brand_list) {
+  const data = { brand_list: brand_list };
+
+  try {
+    const response = await fetch(`${LIVE_API_URL}/get_shipping_info`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation in getting shipping information:', error);
+  }
+}
