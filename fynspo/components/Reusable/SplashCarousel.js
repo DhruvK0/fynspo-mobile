@@ -111,12 +111,10 @@ const SplashCarouselComponent = ({ title, fetchItems }) => {
                 priority: FastImage.priority.high,
               }}
               resizeMode={FastImage.resizeMode.cover}
-            />
-          <LinearGradient
-            colors={['transparent',  'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.9)']}
-            style={styles.gradient}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 0, y: 0.85 }}
+           />
+          <LinearGradient 
+                colors={['#00000000', '#000000']} 
+                style={styles.gradient}
           />
           <TouchableOpacity style={styles.categoryButton} onPress={handleOpenGrid}>
             <Text style={styles.categoryText}>{title}</Text>
@@ -201,6 +199,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: '100%',
+    opacity: 0.9
   },
 
   titleContainer: {
