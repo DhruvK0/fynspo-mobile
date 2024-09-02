@@ -30,7 +30,7 @@ const ShippingForm = ({ address, setAddress }) => {
         appearance={{ colors: { primary: '#8400ff', background: '#ffffff' } }}
         visible={addressSheetVisible}
         onSubmit={(addressDetails) => { setAddress(addressDetails); setAddressSheetVisible(false); }}
-        onError={(error) => { Alert.alert('Error', error.message); setAddressSheetVisible(false); }}
+        onError={(error) => { setAddressSheetVisible(false); }}
         additionalFields={{ phoneNumber: 'required' }}
         allowedCountries={['US']}
       />

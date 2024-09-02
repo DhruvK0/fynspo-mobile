@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-const OrderSummary = ({ cartItems, subtotal, shippingCost, total, address }) => {
+const OrderSummary = ({ cartItems, subtotal, shippingCost, taxAmount, total, address }) => {
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
       <FastImage source={{ uri: item.image }} style={styles.itemImage} resizeMode={FastImage.resizeMode.cover} />
@@ -35,6 +35,12 @@ const OrderSummary = ({ cartItems, subtotal, shippingCost, total, address }) => 
             {address ? `$${shippingCost.toFixed(2)}` : "Enter Shipping Address"}
           </Text>
         </View>
+        {address && (
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalText}>Estimated Tax:</Text>
+            <Text style={styles.totalAmount}>${taxAmount.toFixed(2)}</Text>
+          </View>
+        )}
         <View style={styles.totalContainer}>
           <Text style={[styles.totalText, styles.finalTotal]}>Total:</Text>
           <Text style={[styles.totalAmount, styles.finalTotal]}>
