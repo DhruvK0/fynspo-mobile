@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, SafeAreaView, Animated
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import { useStripe } from '@stripe/stripe-react-native';
 import { fetchPaymentSheetParams, getShippingInformation, calculateTaxAmount } from '../../utils/requests';
+import { clearCart } from '../../utils/storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ContactForm from './Checkout/ContactForm';
 import ShippingForm from './Checkout/ShippingForm';
@@ -156,6 +157,8 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
       Alert.alert(`Error: ${error.code}`, error.message);
     } else {
       Alert.alert('Success', 'Your order is confirmed!');
+      clearCart(); // clear the cart after successful payment
+      animateModal(width)
     }
   };
 

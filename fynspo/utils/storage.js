@@ -7,9 +7,10 @@ const CART_KEY = '@cart';
 const CATEGORIES_KEY = '@categories';
 const FAVORITES_OBJECT_KEY = '@favorites_object';
 const CART_OBJECT_KEY = '@cart_object';
-
+const FILTERS_KEY = '@filters';
 
 let listeners = [];
+let filterListeners = [];
 
 export const saveItemState = async (item, isFavorite, isInCart) => {
   try {
@@ -107,10 +108,58 @@ export const getAllItemStates = async () => {
   }
 };
 
+export const saveFilterState = async (filters) => {
+  try {
+    await AsyncStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
+    notifyFilterListeners(filters);
+  } catch (error) {
+    console.error('Error saving filter state:', error);
+  }
+};
+
+export const getFilterState = async () => {
+  try {
+    const filters = await AsyncStorage.getItem(FILTERS_KEY);
+    return filters ? JSON.parse(filters) : {};
+  } catch (error) {
+    console.error('Error getting filter state:', error);
+    return {};
+  }
+};
+
+export const clearCart = async () => {
+  try {
+    // Remove cart-related data from AsyncStorage
+    await AsyncStorage.multiRemove([CART_KEY, CART_OBJECT_KEY]);
+
+    // Get current state of other data
+    const favorites = await AsyncStorage.getItem(FAVORITES_KEY);
+    const categories = await AsyncStorage.getItem(CATEGORIES_KEY);
+    const favoritesObject = await AsyncStorage.getItem(FAVORITES_OBJECT_KEY);
+
+    // Prepare updated state
+    const updatedState = {
+      favorites: favorites ? JSON.parse(favorites) : [],
+      cart: [],
+      categories: categories ? JSON.parse(categories) : {},
+      favoritesObject: favoritesObject ? JSON.parse(favoritesObject) : {},
+      cartObject: {}
+    };
+
+    // Notify listeners of the change
+    notifyListeners(updatedState);
+
+    console.log('Cart cleared successfully');
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+  }
+};
+
 export const clearAllData = async () => {
   try {
-    await AsyncStorage.multiRemove([FAVORITES_KEY, CART_KEY, CATEGORIES_KEY]);
-    notifyListeners({ favorites: [], cart: [], categories: {} });
+    await AsyncStorage.multiRemove([FAVORITES_KEY, CART_KEY, CATEGORIES_KEY, FAVORITES_OBJECT_KEY, CART_OBJECT_KEY, FILTERS_KEY]);
+    notifyListeners({ favorites: [], cart: [], categories: {}, favoritesObject: {}, cartObject: {} });
+    notifyFilterListeners({});
   } catch (error) {
     console.error('Error clearing all data:', error);
   }
@@ -123,6 +172,17 @@ export const subscribeToChanges = (callback) => {
   };
 };
 
+export const subscribeToFilterChanges = (callback) => {
+  filterListeners.push(callback);
+  return () => {
+    filterListeners = filterListeners.filter(listener => listener !== callback);
+  };
+};
+
 const notifyListeners = (data) => {
   listeners.forEach(listener => listener(data));
+};
+
+const notifyFilterListeners = (filters) => {
+  filterListeners.forEach(listener => listener(filters));
 };
