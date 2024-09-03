@@ -7,6 +7,7 @@ import {
   Dimensions,
   Modal,
   ActivityIndicator,
+  Animated
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +17,7 @@ import { userInteraction } from '../../utils/requests';
 import ItemDetails from './ItemDetails';
 import { useUser } from '@clerk/clerk-expo';
 
-const { width } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 const ITEM_WIDTH = width / 2 - 30;
 const ITEM_HEIGHT = ITEM_WIDTH * 2; // Adjust this multiplier as needed
 
@@ -61,6 +62,7 @@ const ItemComponent = ({ item, previousCloseModal}) => {
   const [selectedSize, setSelectedSize] = useState(null);
   const { user } = useUser();
   const modalOpenTimeRef = useRef(null);
+  const slideAnim = useRef(new Animated.Value(height)).current;
 
   useEffect(() => {
     loadItemState();
@@ -88,11 +90,33 @@ const ItemComponent = ({ item, previousCloseModal}) => {
 
     setIsModalVisible(true);
     modalOpenTimeRef.current = Date.now();
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   }
 
+  // const closeModal = async () => {
+  //   setIsModalVisible(false);
+  //   const duration = (Date.now() - modalOpenTimeRef.current) / 1000; // Convert to seconds
+  //   try {
+  //     await userInteraction(user.id, item.id, 'view', duration);
+  //   } catch (error) {
+  //     console.error('Error logging user interaction:', error);
+  //   }
+  // }
+
   const closeModal = async () => {
-    setIsModalVisible(false);
-    const duration = (Date.now() - modalOpenTimeRef.current) / 1000; // Convert to seconds
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsModalVisible(false);
+    });
+
+    const duration = (Date.now() - modalOpenTimeRef.current) / 1000;
     try {
       await userInteraction(user.id, item.id, 'view', duration);
     } catch (error) {
@@ -204,7 +228,16 @@ const ItemComponent = ({ item, previousCloseModal}) => {
         visible={isModalVisible}
         onRequestClose={closeModal}
       >
-        <ItemDetails item={item} closeModal={closeModal} />
+        <Animated.View 
+          style={[
+            styles.modalContainer,
+            {
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <ItemDetails item={item} closeModal={closeModal} />
+        </Animated.View>
       </Modal>
     </TouchableOpacity>
   );
@@ -299,6 +332,14 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'white',
   },
 });
 
