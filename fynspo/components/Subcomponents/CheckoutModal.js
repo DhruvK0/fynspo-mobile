@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useInsertionEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, SafeAreaView, Animated, Dimensions, Alert, ScrollView } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import { useStripe } from '@stripe/stripe-react-native';
+import { fetchPaymentSheetParams, getShippingInformation, calculateTaxAmount } from '../../utils/requests';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { fetchPaymentSheetParams, getShippingInformation } from '../../utils/requests';
 import ContactForm from './Checkout/ContactForm';
 import ShippingForm from './Checkout/ShippingForm';
 import OrderSummary from './Checkout/OrderSummary';
@@ -19,19 +19,34 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
   const [costPerBrand, setCostPerBrand] = useState({});
   const [totalShippingCost, setTotalShippingCost] = useState(0);
   const [shippingInfo, setShippingInfo] = useState([]);
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [ isDoneCalculating, setIsDoneCalculating ] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
       animateModal(0);
     }
-    initializePaymentSheet();
+    // initializePaymentSheet();
   }, [isVisible]);
 
   useEffect(() => {
     if (address) {
-      calculateCostPerBrand();
+      const calculateRemaining = async () => {
+        await calculateCostPerBrand();
+        await calculateTax();
+        setIsDoneCalculating(true);
+      }
+      calculateRemaining();
     }
   }, [address, cartItems]);
+
+  useEffect(() => {
+    if (isDoneCalculating) {
+      const total = calculateTotal();
+      initializePaymentSheet(total);
+    }
+  }, [isDoneCalculating]);
+
 
   useEffect(() => {
     if (shippingInfo.length > 0 && Object.keys(costPerBrand).length > 0) {
@@ -45,6 +60,7 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
     setCostPerBrand({});
     setShippingInfo([]);
     setTotalShippingCost(0);
+    setTaxAmount(0);
   };
 
   const calculateCostPerBrand = async () => {
@@ -66,6 +82,31 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
       return acc + shippingFee;
     }, 0);
     setTotalShippingCost(total);
+  };
+
+  const calculateTax = async () => {
+    // This is a dummy function to simulate tax calculation
+    // In a real scenario, you would make an API call to Stripe here
+
+    const line_items = cartItems.map(item => ({
+      amount: item.price * 100, // Stripe expects amounts in cents
+      reference: item.id.toString(),
+    }));
+    
+    const customer_details = {
+      address: {
+        "line1": address.address.line1,
+        "city": address.address.city,
+        "state": address.address.state,
+        "postal_code": address.address.postalCode,
+        "country": address.address.country,
+      },
+      address_source: "shipping"
+    };
+
+    const tax = await calculateTaxAmount(customer_details, line_items);
+ 
+    setTaxAmount(tax.tax_calculation.tax_amount_exclusive);
   };
 
   const handleClose = () => {
@@ -91,15 +132,15 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
     }
   };
 
-  const initializePaymentSheet = async () => {
-    const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams();
+  const initializePaymentSheet = async (total) => {
+    const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams(total*100);
     const { error } = await initPaymentSheet({
-      merchantDisplayName: "Example, Inc.",
+      merchantDisplayName: "fynspo",
       customerId: customer,
       customerEphemeralKeySecret: ephemeralKey,
       paymentIntentClientSecret: paymentIntent,
       allowsDelayedPaymentMethods: true,
-      defaultBillingDetails: { name: 'Jane Doe' },
+      defaultBillingDetails: { name: address.name },
       returnURL: 'fynspo://payment-complete',
       applePay: { merchantCountryCode: 'US' },
       googlePay: { merchantCountryCode: 'US', currencyCode: 'usd', testEnv: true }
@@ -122,7 +163,7 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
 
   const calculateSubtotal = () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const calculateTotal = () => calculateSubtotal() + totalShippingCost;
+  const calculateTotal = () => calculateSubtotal() + totalShippingCost + taxAmount;
 
   return (
     <Modal visible={isVisible} animationType="none" transparent={true} onRequestClose={() => animateModal(width)}>
@@ -141,7 +182,8 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
                 <OrderSummary 
                   cartItems={cartItems} 
                   subtotal={calculateSubtotal()} 
-                  shippingCost={totalShippingCost} 
+                  shippingCost={totalShippingCost}
+                  taxAmount={taxAmount}
                   total={calculateTotal()} 
                   address={address} 
                 />
@@ -154,7 +196,7 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
                 disabled={!isCheckoutReady()}
               >
                 <Text style={styles.checkoutButtonText}>
-                  {isCheckoutReady() ? "Proceed to Checkout" : "Please fill all fields"}
+                  {isCheckoutReady() ? isDoneCalculating ? "Proceed to Checkout" : "Calculating..." : "Please fill all fields"}
                 </Text>
               </TouchableOpacity>
             </View>
