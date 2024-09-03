@@ -57,12 +57,14 @@ export const getFilters = async () => {
   }
 };
 
-export const fetchPaymentSheetParams = async () => {
+export const fetchPaymentSheetParams = async (amount) => {
+  const data = { amount: amount };
   const response = await fetch(`${LIVE_API_URL}/payment-sheet`, {
       method: 'POST',
       headers: {
       'Content-Type': 'application/json',
       },
+      body: JSON.stringify(data),
   });
   const { paymentIntent, ephemeralKey, customer } = await response.json();
 
@@ -73,7 +75,7 @@ export const fetchPaymentSheetParams = async () => {
   }
 };
 
-export async function calculateTax(customer_details, line_items) {
+export async function calculateTaxAmount(customer_details, line_items) {
   const data = { customer_details: customer_details, line_items: line_items };
 
   try {
