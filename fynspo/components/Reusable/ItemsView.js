@@ -20,7 +20,6 @@ const ItemsView = ({ title, onBack }) => {
   );
 };
 
-
 const ContentPage = ({ title }) => {
   const [categoryData, setCategoryData] = useState({});
   const [displayedIds, setDisplayedIds] = useState({});
@@ -36,8 +35,8 @@ const ContentPage = ({ title }) => {
     'body chain', 'hat', 'sunglasses', 'underwear', 'swimwear', 'bag', 'other'
   ];
 
-  const INITIAL_LOAD_COUNT = 5; // Number of categories to load initially
-  const LOAD_MORE_COUNT = 3; // Number of additional categories to load when scrolling
+  const INITIAL_LOAD_COUNT = 5;
+  const LOAD_MORE_COUNT = 3;
   const loadingRef = useRef(false);
 
   const fetchCategoryData = useCallback(async (category) => {
@@ -46,7 +45,7 @@ const ContentPage = ({ title }) => {
 
     try {
       const uid = user.id;
-      const result = await getUserRecs(uid, null, null, null, null, null, title);
+      const result = await getUserRecs(uid, category, null, null, null, null, [title]);
       if (result && result.length > 0) {
         setCategoryData(prevData => ({
           ...prevData,
@@ -56,14 +55,14 @@ const ContentPage = ({ title }) => {
           ...prevIds,
           [category]: result.map(item => item.fynspo_id)
         }));
-        setLoadedCategories(prev => prev + 1);
       }
     } catch (error) {
       console.error(`Error fetching data for category ${category}:`, error);
     } finally {
       loadingRef.current = false;
+      setLoadedCategories(prev => prev + 1);
     }
-  }, [user]);
+  }, [user, title]);
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
@@ -143,7 +142,7 @@ const ContentPage = ({ title }) => {
       console.error('Error fetching new items for category:', error);
       return getItemsForCategory(category, page);
     }
-  }, [user, displayedIds, getItemsForCategory, mapApiItemToCarouselItem]);
+  }, [user, displayedIds, getItemsForCategory, mapApiItemToCarouselItem, title]);
 
   const handleScroll = useCallback((event) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -165,7 +164,7 @@ const ContentPage = ({ title }) => {
     );
   }
 
-  const categoriesWithItems = Object.keys(categoryData).filter(category => categoryData[category].length > 0);
+  const categoriesWithItems = Object.keys(categoryData).filter(category => categoryData[category] && categoryData[category].length > 0);
 
   return (
     <SafeAreaView style={styles.container}>
