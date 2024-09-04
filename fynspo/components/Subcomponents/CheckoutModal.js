@@ -214,9 +214,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, SafeAreaView, Animated, Dimensions, Alert, ScrollView } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import { useStripe } from '@stripe/stripe-react-native';
-import { fetchPaymentSheetParams, getShippingInformation, calculateTaxAmount } from '../../utils/requests';
+import { fetchPaymentSheetParams, getShippingInformation, calculateTaxAmount, getProductLinks } from '../../utils/requests';
 import { clearCart } from '../../utils/storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { GoogleSpreadsheet } from 'google-spreadsheet';
 import ContactForm from './Checkout/ContactForm';
 import ShippingForm from './Checkout/ShippingForm';
 import OrderSummary from './Checkout/OrderSummary';
@@ -361,12 +362,69 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
     }
   };
 
+
+  const sendToGoogleSheets = async (customerInfo) => {
+    const formdata = new FormData();
+    formdata.append("Name", customerInfo.name);
+    formdata.append("Email", customerInfo.email);
+    formdata.append("Phone", customerInfo.phone);
+    formdata.append("Address", customerInfo.address);
+    formdata.append("Product_Link", customerInfo.product_link);
+    formdata.append("Size", customerInfo.size);
+    formdata.append("Quantity", customerInfo.quantity);
+    formdata.append("Completed", "No");
+
+    const requestOptions = {
+      method: "POST",
+      body: formdata,
+      redirect: "follow"
+    };
+    try {
+      await fetch("https://script.google.com/macros/s/AKfycbyVw8ot0d9IcKyweH5e-6BGHc5T8ryXMk_QUmDKs8GG5Bxsh656mcZTuHvFxnr9-LwR4w/exec", requestOptions)
+    } catch (error) {
+      console.error('Error sending data to Google Sheets:', error);
+      throw error;
+    }
+  }
+
+  const formatAllitems = async () => {
+      console.log(address)
+      const name = address.name;
+      const phone = address.phone;
+      const formatted_address = `${address.address.line1}, ${address.address.city}, ${address.address.state} ${address.address.postalCode}, ${address.address.country}`;
+     
+      //create a list of item ids and send it to the server to get the product links
+      const itemIds = cartItems.map(item => item.id);
+      const productLinks = await getProductLinks(itemIds);
+
+      // for every item in the cart, send the order to google sheets
+      cartItems.forEach(async item => {
+        const customerInfo = {
+          name: name,
+          email: email,
+          phone: phone,
+          address: formatted_address,
+          product_link: productLinks[item.id],
+          size: item.selected_size,
+          quantity: item.quantity,
+        };
+        console.log(customerInfo);
+        try {
+          await sendToGoogleSheets(customerInfo);
+        } catch (error) {
+          console.error('Error sending data to Google Sheets:', error);
+          // Optionally, you can show an alert to the user here
+        }
+      });
+  }
+
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
     if (error) {
       Alert.alert(`Error: ${error.code}`, error.message);
     } else {
       Alert.alert('Success', 'Your order is confirmed!');
+      await formatAllitems();
       clearCart();
       setIsCheckoutComplete(true);
       animateModal(width);

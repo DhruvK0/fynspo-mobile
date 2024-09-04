@@ -281,3 +281,26 @@ export async function getShippingInformation(brand_list) {
     console.error('There was a problem with the fetch operation in getting shipping information:', error);
   }
 }
+
+export async function getProductLinks(fynspo_id_list) {
+  const data = { fynspo_id_list: fynspo_id_list };
+
+  try {
+    const response = await fetch(`${LIVE_API_URL}/get_product_links`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation in getting product links:', error);
+  }
+}
