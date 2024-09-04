@@ -211,6 +211,7 @@ const ItemDetails = ({ item, closeModal, navigateToItem }) => {
               fetchItems={fetchSimilarItems}
               initialItems={[]}
               onItemPress={handleSimilarItemPress}
+              previousCloseModal={closeModal}
             />
           </View>
         </View>
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: 'black',
-    marginBottom: NAVBAR_HEIGHT + 25,
+    paddingBottom: 25,
   },
   modalContent: {
     backgroundColor: '#000',

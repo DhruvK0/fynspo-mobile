@@ -7,7 +7,8 @@ import {
   Dimensions,
   Modal,
   ActivityIndicator,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,6 +57,7 @@ const ImageComponent = ({ source, style }) => {
 
 const ItemComponent = ({ item, previousCloseModal}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [openItemId, setOpenItemId] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInBag, setIsInBag] = useState(false);
   const [isSizeModalVisible, setIsSizeModalVisible] = useState(false);
@@ -82,11 +84,10 @@ const ItemComponent = ({ item, previousCloseModal}) => {
     setIsInBag(storedInCart);
   };
 
-
   const openModal = async () => {
-    if (previousCloseModal) {
-      previousCloseModal();
-    }
+    // if (previousCloseModal) {
+    //   previousCloseModal();
+    // }
 
     setIsModalVisible(true);
     modalOpenTimeRef.current = Date.now();
@@ -97,15 +98,6 @@ const ItemComponent = ({ item, previousCloseModal}) => {
     }).start();
   }
 
-  // const closeModal = async () => {
-  //   setIsModalVisible(false);
-  //   const duration = (Date.now() - modalOpenTimeRef.current) / 1000; // Convert to seconds
-  //   try {
-  //     await userInteraction(user.id, item.id, 'view', duration);
-  //   } catch (error) {
-  //     console.error('Error logging user interaction:', error);
-  //   }
-  // }
 
   const closeModal = async () => {
     Animated.timing(slideAnim, {
@@ -183,28 +175,34 @@ const ItemComponent = ({ item, previousCloseModal}) => {
             color={isFavorite ? "#8400ff" : "white"} 
         />
         </TouchableOpacity>
-        <Modal animationType="slide" transparent={true} visible={isSizeModalVisible} onRequestClose={() => setIsSizeModalVisible(false)}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Size</Text>
-            {availableSizes.map((size) => (
-              <TouchableOpacity
-                key={size}
-                style={styles.sizeOption}
-                onPress={(event) => selectSize(event, size)}
-                // disabled={quantity === 0}
-              >
-                <Text style={[styles.sizeOptionText]}>
-                  {size}
-                </Text>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isSizeModalVisible}
+          onRequestClose={() => setIsSizeModalVisible(false)}
+        >
+          <View style={styles.centeredModalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Size</Text>
+              <ScrollView style={styles.sizeScrollView}>
+                {availableSizes.map((size) => (
+                  <TouchableOpacity
+                    key={size}
+                    style={styles.sizeOption}
+                    onPress={(event) => selectSize(event, size)}
+                  >
+                    <Text style={styles.sizeOptionText}>
+                      {size}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <TouchableOpacity onPress={() => setIsSizeModalVisible(false)} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
-            ))}
-            <TouchableOpacity onPress={() => setIsSizeModalVisible(false)} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
       </View>
       <View style={styles.infoContainer}>
         <View style={styles.textContainer}>
@@ -301,17 +299,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  disabledText: {
+    color: '#999',
+  },
+  centeredModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
     width: '80%',
+    maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
+  },
+  sizeScrollView: {
+    maxHeight: 300,
   },
   sizeOption: {
     paddingVertical: 10,
@@ -321,9 +332,7 @@ const styles = StyleSheet.create({
   sizeOptionText: {
     fontSize: 16,
     color: '#000',
-  },
-  disabledText: {
-    color: '#999',
+    textAlign: 'center',
   },
   closeButton: {
     marginTop: 15,
@@ -332,14 +341,6 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#007AFF',
     fontSize: 16,
-  },
-  modalContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'white',
   },
 });
 

@@ -11,7 +11,7 @@ const ITEM_WIDTH = screenWidth * 0.4;
 const ITEM_MARGIN = 10;
 const VISIBLE_ITEMS = 2.5;
 
-const CarouselComponent = ({ title, fetchItems }) => {
+const CarouselComponent = ({ title, fetchItems, previousCloseModal }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -44,6 +44,7 @@ const CarouselComponent = ({ title, fetchItems }) => {
     // assign the style list to the style key of the object
     <ItemComponent
       item={{ ...item, style: [styles.carouselItem, { width: ITEM_WIDTH }, index === 0 && styles.firstCarouselItem, index === items.length - 1 && styles.lastCarouselItem] }}
+      previousCloseModal={previousCloseModal}
     />
   );
 
