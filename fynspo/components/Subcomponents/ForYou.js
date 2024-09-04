@@ -6,7 +6,8 @@ import { useUser } from '@clerk/clerk-expo';
 import { ActivityIndicator } from 'react-native-paper';
 
 const ForYouPage = () => {
-  const [categoriesWithItems, setCategoriesWithItems] = useState([]);
+  const [categoryData, setCategoryData] = useState({});
+  const [displayedIds, setDisplayedIds] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadedCategories, setLoadedCategories] = useState(0);
@@ -19,8 +20,8 @@ const ForYouPage = () => {
     'body chain', 'hat', 'sunglasses', 'underwear', 'swimwear', 'bag', 'other'
   ];
 
-  const INITIAL_LOAD_COUNT = 5;
-  const LOAD_MORE_COUNT = 5;
+  const INITIAL_LOAD_COUNT = 5; // Number of categories to load initially
+  const LOAD_MORE_COUNT = 5; // Number of additional categories to load when scrolling
   const loadingRef = useRef(false);
 
   const fetchCategoryData = useCallback(async (category) => {
@@ -31,7 +32,14 @@ const ForYouPage = () => {
       const uid = user.id;
       const result = await getUserRecs(uid, category, user.unsafeMetadata.fashionPreference, null, null, null);
       if (result && result.length > 0) {
-        setCategoriesWithItems(prev => [...prev, category]);
+        setCategoryData(prevData => ({
+          ...prevData,
+          [category]: result
+        }));
+        setDisplayedIds(prevIds => ({
+          ...prevIds,
+          [category]: result.map(item => item.fynspo_id)
+        }));
         setLoadedCategories(prev => prev + 1);
       }
     } catch (error) {
@@ -44,7 +52,8 @@ const ForYouPage = () => {
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     setLoadedCategories(0);
-    setCategoriesWithItems([]);
+    setCategoryData({});
+    setDisplayedIds({});
 
     const initialCategories = categories.slice(0, INITIAL_LOAD_COUNT);
     await Promise.all(initialCategories.map(fetchCategoryData));
@@ -79,28 +88,45 @@ const ForYouPage = () => {
     price: apiItem.price,
   }), []);
 
+  const getItemsForCategory = useCallback((category, page = 0) => {
+    const items = categoryData[category] || [];
+    const startIndex = page * 10 % items.length;
+    return items
+      .slice(startIndex, startIndex + 10)
+      .map(mapApiItemToCarouselItem);
+  }, [categoryData, mapApiItemToCarouselItem]);
+
   const fetchItemsForCategory = useCallback((category) => async (page) => {
     try {
       const uid = user.id;
+      const shownIds = displayedIds[category] || [];
       const newItems = await getUserRecs(
         uid,
         category,
         user.unsafeMetadata.fashionPreference,
+        shownIds,
         null,
-        page * 10,
-        10
+        null
       );
 
       if (newItems && newItems.length > 0) {
+        setCategoryData(prevData => ({
+          ...prevData,
+          [category]: [...(prevData[category] || []), ...newItems]
+        }));
+        setDisplayedIds(prevIds => ({
+          ...prevIds,
+          [category]: [...(prevIds[category] || []), ...newItems.map(item => item.fynspo_id)]
+        }));
         return newItems.map(mapApiItemToCarouselItem);
       } else {
-        return [];
+        return getItemsForCategory(category, page);
       }
     } catch (error) {
       console.error('Error fetching new items for category:', error);
-      return [];
+      return getItemsForCategory(category, page);
     }
-  }, [user, mapApiItemToCarouselItem]);
+  }, [user, displayedIds, getItemsForCategory, mapApiItemToCarouselItem]);
 
   const handleScroll = useCallback((event) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -121,6 +147,8 @@ const ForYouPage = () => {
       </SafeAreaView>
     );
   }
+
+  const categoriesWithItems = Object.keys(categoryData).filter(category => categoryData[category].length > 0);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -143,7 +171,7 @@ const ForYouPage = () => {
               key={index} 
               title={category.charAt(0).toUpperCase() + category.slice(1)} 
               fetchItems={fetchItemsForCategory(category)}
-              initialItems={[]}
+              initialItems={getItemsForCategory(category)}
             />
           ))
         ) : (
