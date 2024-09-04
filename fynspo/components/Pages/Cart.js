@@ -1,77 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
 import { getAllItemStates, saveItemState, subscribeToChanges } from '../../utils/storage';
 import ShoppingCartItem from '../Reusable/ShoppingCartItem';
-import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
+import { StripeProvider } from '@stripe/stripe-react-native';
+import CheckoutModal from '../Subcomponents/CheckoutModal';
 
 const ShoppingCartPage = () => {
   const [cartItems, setCartItems] = useState([]);
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const [loading, setLoading] = useState(false);
-
-  const fetchPaymentSheetParams = async () => {
-    const response = await fetch('https://backend-server-8doz.onrender.com/payment-sheet', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const { paymentIntent, ephemeralKey, customer } = await response.json();
-
-    return {
-      paymentIntent,
-      ephemeralKey,
-      customer,
-    };
-  };
-
-  const initializePaymentSheet = async () => {
-    const {
-      paymentIntent,
-      ephemeralKey,
-      customer,
-    } = await fetchPaymentSheetParams();
-
-    const { error } = await initPaymentSheet({
-      merchantDisplayName: "Example, Inc.",
-      customerId: customer,
-      customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: paymentIntent,
-      // Set `allowsDelayedPaymentMethods` to true if your business can handle payment
-      //methods that complete payment after a delay, like SEPA Debit and Sofort.
-      allowsDelayedPaymentMethods: true,
-      defaultBillingDetails: {
-        name: 'Jane Doe',
-      },
-      returnURL: 'fynspo://payment-complete',
-      applePay: {
-        merchantCountryCode: 'US',
-      },
-      googlePay: {
-        merchantCountryCode: 'US',
-        currencyCode: 'usd',
-        testEnv: true,
-      }
-    });
-    if (!error) {
-      setLoading(true);
-    }
-  };
-
-  const openPaymentSheet = async () => {
-    initializePaymentSheet();
-    const { error } = await presentPaymentSheet();
-
-    if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      Alert.alert('Success', 'Your order is confirmed!');
-    }
-  };
-
-  // useEffect(() => {
-  //   initializePaymentSheet();
-  // }, []);
+  const [isCheckoutModalVisible, setIsCheckoutModalVisible] = useState(false);
 
   useEffect(() => {
     loadCartItems();
@@ -115,9 +51,16 @@ const ShoppingCartPage = () => {
     return cartItems.reduce((total, item) => total + item.price * (item.quantity || 1), 0).toFixed(2);
   };
 
+  const calculateTotalItems = () => {
+    return cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
+  };
+
   const handleCheckout = () => {
-    // Implement checkout logic here
-    console.log('Proceed to checkout');
+    setIsCheckoutModalVisible(true);
+  };
+
+  const handleCloseCheckoutModal = () => {
+    setIsCheckoutModalVisible(false);
   };
 
   const renderItem = ({ item }) => (
@@ -130,8 +73,9 @@ const ShoppingCartPage = () => {
 
   return (
     <StripeProvider
-    publishableKey={'pk_test_51PlDzmDfJffGPw9ZxRT6Zp6tj5lhBUMr4vxKDV2Wik2KbkYymW2mo0eotiwJChBHeZQvjde97kFNfxeWpZu8hwVe006eZVOPIi'}
-    merchantIdentifier={'merchant.com.fynspo'}>
+      publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      merchantIdentifier={'merchant.com.fynspo'}
+    >
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Shopping Cart</Text>
@@ -148,13 +92,21 @@ const ShoppingCartPage = () => {
             keyExtractor={item => item.id}
           />
           <View style={styles.totalContainer}>
-            <Text style={styles.totalText}>Total: ${calculateTotal()}</Text>
-            <TouchableOpacity style={styles.checkoutButton} onPress={openPaymentSheet}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalText}>Total: ${calculateTotal()}</Text>
+              <Text style={styles.itemCountText}>{calculateTotalItems()} items</Text>
+            </View>
+            <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
               <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
             </TouchableOpacity>
           </View>
         </>
       )}
+      <CheckoutModal
+        isVisible={isCheckoutModalVisible}
+        onClose={handleCloseCheckoutModal}
+        cartItems={cartItems}
+      />
     </SafeAreaView>
     </StripeProvider>
   );
@@ -187,11 +139,20 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#1a1a1a',
   },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   totalText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 10,
+  },
+  itemCountText: {
+    fontSize: 16,
+    color: '#fff',
   },
   checkoutButton: {
     backgroundColor: '#8400ff',
