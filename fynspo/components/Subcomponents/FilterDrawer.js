@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated, Dimensi
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCollections } from '../../utils/requests';
+import { saveFilterState, getFilterState } from '../../utils/storage';
 
 const { height, width } = Dimensions.get('window');
 const DRAWER_HEIGHT = height * 0.75;
@@ -40,6 +41,7 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
         useNativeDriver: true,
         bounciness: 0,
       }).start();
+      loadFilters();
       fetchBrands();
     } else {
       Animated.spring(translateY, {
@@ -72,6 +74,19 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
     saveFilters({ ...selectedFilters, sort: selectedSort === option ? '' : option });
   };
 
+  const loadFilters = async () => {
+    setLoading(true);
+    try {
+      const savedFilters = await getFilterState();
+      setSelectedSort(savedFilters.sort || '');
+      setSelectedFilters(savedFilters.filters || {});
+    } catch (error) {
+      console.error('Error loading filters:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleFilter = (category, value) => {
     setSelectedFilters(prev => {
       const updatedFilters = { ...prev };
@@ -90,13 +105,14 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
     });
   };
 
-  const saveFilters = async (filters) => {
-    try {
-      await AsyncStorage.setItem('filters', JSON.stringify(filters));
-    } catch (error) {
-      console.error('Error saving filters:', error);
-    }
-  };
+  const saveFilters = async () => {
+  try {
+    console.log({ sort: selectedSort, filters: selectedFilters })
+    await saveFilterState({ sort: selectedSort, filters: selectedFilters });
+  } catch (error) {
+    console.error('Error saving filters:', error);
+  }
+};
 
   const fetchBrands = async () => {
   setLoading(true);

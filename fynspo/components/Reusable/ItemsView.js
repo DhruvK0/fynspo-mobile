@@ -28,11 +28,34 @@ const ContentPage = ({ title }) => {
   const [loadedCategories, setLoadedCategories] = useState(0);
   const { user } = useUser();
 
+  // const categories = [
+  //   'shirt', 'blouse', 'tank top', 'top', 't-shirt', 'sweatshirt', 'sweater',
+  //   'cardigan', 'vest', 'jacket', 'pants', 'shorts', 'skirt', 'coat', 'dress',
+  //   'jumpsuit', 'shoe', 'socks', 'necklace', 'bracelet', 'earrings', 'ring',
+  //   'body chain', 'hat', 'sunglasses', 'underwear', 'swimwear', 'bag', 'other'
+  // ];
   const categories = [
-    'shirt', 'blouse', 'tank top', 'top', 't-shirt', 'sweatshirt', 'sweater',
-    'cardigan', 'vest', 'jacket', 'pants', 'shorts', 'skirt', 'coat', 'dress',
-    'jumpsuit', 'shoe', 'socks', 'necklace', 'bracelet', 'earrings', 'ring',
-    'body chain', 'hat', 'sunglasses', 'underwear', 'swimwear', 'bag', 'other'
+    'top', 
+    'shirt', 
+    'blouse', 
+    // 'tank top', 
+    't-shirt', 
+    // 'sweatshirt', 
+    'sweater',
+    'cardigan', 
+    'vest', 'jacket', 
+    'pants', 'shorts', 'skirt', 'coat', 'dress',
+    // 'jumpsuit', 
+    'shoe', 
+    // 'socks',
+    //  'necklace', 'bracelet', 'earrings', 'ring',
+    // 'body chain', 
+    // 'hat', 'sunglasses',
+    // 'underwear', 
+    'swimwear', 
+    //  'bag',
+    
+    // 'other'
   ];
 
   const INITIAL_LOAD_COUNT = 5;
