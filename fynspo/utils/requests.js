@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://mock-apis-fex9.onrender.com';
 const LIVE_API_URL = 'https://fynspo-backend.onrender.com';
+const FYNSPO_API_KEY = process.env.EXPO_PUBLIC_FYNSPO_API_KEY;
 
 export const FetchService = {
   getTrendingItems: async (page = 1, filters = {}) => {
@@ -58,7 +59,7 @@ export const getFilters = async () => {
 };
 
 export const fetchPaymentSheetParams = async (amount) => {
-  const data = { amount: amount };
+  const data = { amount: amount, api_key: FYNSPO_API_KEY };
   const response = await fetch(`${LIVE_API_URL}/payment-sheet`, {
       method: 'POST',
       headers: {
@@ -76,7 +77,7 @@ export const fetchPaymentSheetParams = async (amount) => {
 };
 
 export async function calculateTaxAmount(customer_details, line_items) {
-  const data = { customer_details: customer_details, line_items: line_items };
+  const data = { customer_details: customer_details, line_items: line_items, api_key: FYNSPO_API_KEY  };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/tax-calculations`, {
@@ -99,6 +100,7 @@ export async function calculateTaxAmount(customer_details, line_items) {
 }
 
 export async function getTrendingItems()  {
+  const data = { api_key: FYNSPO_API_KEY };
   try {
     const response = await fetch(`${LIVE_API_URL}/get_trending_items`, {
       method: 'GET',
@@ -119,7 +121,7 @@ export async function getTrendingItems()  {
 }
 
 export async function createUser(uid) {
-  const data = { uid: uid };
+  const data = { uid: uid, api_key: FYNSPO_API_KEY };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/create_user`, {
@@ -143,7 +145,7 @@ export async function createUser(uid) {
 }
 
 export async function userInteraction(uid, fynspo_id, interaction_type, duration) {
-  const data = { uid: uid, fynspo_id: fynspo_id, interaction_type: interaction_type, duration: duration };
+  const data = { uid: uid, fynspo_id: fynspo_id, interaction_type: interaction_type, duration: duration, api_key: FYNSPO_API_KEY  };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/user_interaction`, {
@@ -167,7 +169,7 @@ export async function userInteraction(uid, fynspo_id, interaction_type, duration
 
 export async function getUserRecs(uid, category, sex, id_list, collection, collection_category, brand_list, price_low, price_high) {
   //only include the values that are not null
-  const data = { uid: uid, category: category, sex: sex, id_list: id_list, collection: collection, collection_category: collection_category, brand_list: brand_list};
+  const data = { uid: uid, category: category, sex: sex, id_list: id_list, collection: collection, collection_category: collection_category, brand_list: brand_list, api_key: FYNSPO_API_KEY };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/get_user_recs`, {
@@ -190,7 +192,7 @@ export async function getUserRecs(uid, category, sex, id_list, collection, colle
 }
 
 export async function getSimilarItems(fynspo_id, sex) {
-  const data = { fynspo_id: fynspo_id, sex: sex };
+  const data = { fynspo_id: fynspo_id, sex: sex, api_key: FYNSPO_API_KEY  };
 
   try {
     
@@ -214,7 +216,7 @@ export async function getSimilarItems(fynspo_id, sex) {
 }
 
 export async function search(query, id_list, sex) {
-  const data = { query: query, id_list: id_list, sex: sex };
+  const data = { query: query, id_list: id_list, sex: sex, api_key: FYNSPO_API_KEY  };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/search`, {
@@ -237,7 +239,7 @@ export async function search(query, id_list, sex) {
 }
 
 export async function getCollections(collection) {
-  const data = { collection: collection };
+  const data = { collection: collection, api_key: FYNSPO_API_KEY  };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/get_collections`, {
@@ -260,7 +262,7 @@ export async function getCollections(collection) {
 }
 
 export async function getShippingInformation(brand_list) {
-  const data = { brand_list: brand_list };
+  const data = { brand_list: brand_list, api_key: FYNSPO_API_KEY  };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/get_shipping_info`, {
@@ -283,7 +285,7 @@ export async function getShippingInformation(brand_list) {
 }
 
 export async function getProductLinks(fynspo_id_list) {
-  const data = { fynspo_id_list: fynspo_id_list };
+  const data = { fynspo_id_list: fynspo_id_list, api_key: FYNSPO_API_KEY  };
 
   try {
     const response = await fetch(`${LIVE_API_URL}/get_product_links`, {
