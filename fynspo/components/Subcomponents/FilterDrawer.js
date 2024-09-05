@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated, Dimensions, PanResponder, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import { getCollections } from '../../utils/requests';
 import { saveFilterState, getFilterState } from '../../utils/storage';
 
@@ -10,6 +10,8 @@ const DRAWER_HEIGHT = height * 0.75;
 
 const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, selectedFilters, setSelectedFilters }) => {
   const [activeFilter, setActiveFilter] = useState(null);
+  const [tempFilters, setTempFilters] = useState({});
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const translateY = useRef(new Animated.Value(DRAWER_HEIGHT)).current;
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -55,18 +57,17 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
   const sortOptions = [
     'Price: Low to High',
     'Price: High to Low',
-    'New',
-    'Best Seller',
-    'Highest Rated'
+    // 'New',
+    // 'Best Seller',
+    // 'Highest Rated'
   ];
 
   const filterOptions = {
     Brand: brands,
-    Size: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    Price: ['$0-$50', '$50-$100', '$100-$200', '$200+'],
-    Gender: ['Men', 'Women', 'Unisex'],
-    Sale: ['On Sale', 'Regular Price'],
-    Color: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow']
+    // Size: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    // Gender: ['Men', 'Women', 'Unisex'],
+    // Sale: ['On Sale', 'Regular Price'],
+    // Color: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow']
   };
 
   const toggleSort = (option) => {
@@ -80,6 +81,8 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
       const savedFilters = await getFilterState();
       setSelectedSort(savedFilters.sort || '');
       setSelectedFilters(savedFilters.filters || {});
+      setTempFilters(savedFilters.filters || {});
+      setPriceRange(savedFilters.filters?.Price || [0, 1000]);
     } catch (error) {
       console.error('Error loading filters:', error);
     } finally {
@@ -88,7 +91,7 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
   };
 
   const toggleFilter = (category, value) => {
-    setSelectedFilters(prev => {
+    setTempFilters(prev => {
       const updatedFilters = { ...prev };
       if (!updatedFilters[category]) {
         updatedFilters[category] = [value];
@@ -100,32 +103,37 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
       } else {
         updatedFilters[category] = [...updatedFilters[category], value];
       }
-      saveFilters(updatedFilters);
       return updatedFilters;
     });
   };
 
-  const saveFilters = async () => {
-  try {
-    console.log({ sort: selectedSort, filters: selectedFilters })
-    await saveFilterState({ sort: selectedSort, filters: selectedFilters });
-  } catch (error) {
-    console.error('Error saving filters:', error);
-  }
-};
+  const applyFilters = () => {
+    const updatedFilters = { ...tempFilters, Price: priceRange };
+    setSelectedFilters(updatedFilters);
+    saveFilters(updatedFilters);
+    setActiveFilter(null);
+  };
+
+  const saveFilters = async (filters) => {
+    try {
+      console.log({ sort: selectedSort, filters: filters });
+      await saveFilterState({ sort: selectedSort, filters: filters });
+    } catch (error) {
+      console.error('Error saving filters:', error);
+    }
+  };
 
   const fetchBrands = async () => {
-  setLoading(true);
-  try {
-    // Simulating an API call with setTimeout
-    const live_brands = await getCollections("brand");
-    setBrands(live_brands);
-  } catch (error) {
-    console.error('Error fetching brands:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const live_brands = await getCollections("brand");
+      setBrands(live_brands);
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderFilterModal = () => {
     if (!activeFilter) return null;
@@ -140,23 +148,68 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{activeFilter}</Text>
-            <ScrollView>
-              {filterOptions[activeFilter].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.modalOption,
-                    selectedFilters[activeFilter]?.includes(option) && styles.selectedOption
-                  ]}
-                  onPress={() => toggleFilter(activeFilter, option)}
-                >
-                  <Text style={styles.modalOptionText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setActiveFilter(null)}>
-              <Text style={styles.modalCloseButtonText}>Close</Text>
-            </TouchableOpacity>
+              {activeFilter === 'Price' ? (
+                <View style={styles.priceRangeContainer}>
+                  <Text style={styles.priceRangeText}>
+                    ${priceRange[0]} - ${priceRange[1]}
+                  </Text>
+                  <MultiSlider
+                    values={[priceRange[0], priceRange[1]]}
+                    sliderLength={width * 0.5}
+                    onValuesChange={(values) => setPriceRange(values)}
+                    min={0}
+                    max={1000}
+                    step={10}
+                    allowOverlap={false}
+                    snapped
+                    selectedStyle={{
+                      backgroundColor: '#8400ff',
+                    }}
+                    unselectedStyle={{
+                      backgroundColor: '#3a3a3c',
+                    }}
+                    containerStyle={{
+                      height: 40,
+                    }}
+                    trackStyle={{
+                      height: 4,
+                      backgroundColor: '#3a3a3c',
+                    }}
+                    markerStyle={{
+                      height: 20,
+                      width: 20,
+                      borderRadius: 10,
+                      backgroundColor: '#8400ff',
+                      borderWidth: 2,
+                      borderColor: '#fff',
+                    }}
+                  />
+                </View>
+              ) : (
+                <ScrollView> 
+                {filterOptions[activeFilter].map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={[
+                      styles.modalOption,
+                      tempFilters[activeFilter]?.includes(option) && styles.selectedOption
+                    ]}
+                    onPress={() => toggleFilter(activeFilter, option)}
+                  >
+                    <Text style={styles.modalOptionText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+                </ScrollView>
+              )}
+            
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setActiveFilter(null)}>
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.applyButton]} onPress={applyFilters}>
+                <Text style={styles.modalButtonText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -168,13 +221,12 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
       <View {...panResponder.panHandlers}>
         <View style={styles.handle} />
         <View style={styles.header}>
-            <Text style={styles.title}>Filter and Sort</Text>
-            <TouchableOpacity onPress={closeFilter} style={styles.closeButton}>
+          <Text style={styles.title}>Filter and Sort</Text>
+          <TouchableOpacity onPress={closeFilter} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#fff" />
-            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
       </View>
-        
       
       <ScrollView style={styles.content}>
         <Text style={styles.sectionTitle}>Sort By</Text>
@@ -188,14 +240,17 @@ const FilterDrawer = ({ isOpen, closeFilter, selectedSort, setSelectedSort, sele
           </TouchableOpacity>
         ))}
         <Text style={styles.sectionTitle}>Filters</Text>
-        {Object.keys(filterOptions).map((option) => (
+        {Object.keys(filterOptions).concat('Price').map((option) => (
           <TouchableOpacity
             key={option}
-            style={[styles.option, Object.keys(selectedFilters).includes(option) && styles.selectedOption]}
+            style={[styles.option, (Object.keys(selectedFilters).includes(option) || option === 'Price') && styles.selectedOption]}
             onPress={() => setActiveFilter(option)}
           >
             <Text style={styles.optionText}>{option}</Text>
-            {selectedFilters[option] && (
+            {option === 'Price' && selectedFilters.Price && (
+              <Text style={styles.selectedCount}>${selectedFilters.Price[0]} - ${selectedFilters.Price[1]}</Text>
+            )}
+            {option !== 'Price' && selectedFilters[option] && (
               <Text style={styles.selectedCount}>{selectedFilters[option].length} selected</Text>
             )}
           </TouchableOpacity>
@@ -299,17 +354,35 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  modalCloseButton: {
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#8400ff',
+    backgroundColor: '#3a3a3c',
     borderRadius: 5,
+    marginHorizontal: 5,
   },
-  modalCloseButtonText: {
+  applyButton: {
+    backgroundColor: '#8400ff',
+  },
+  modalButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  priceRangeContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  priceRangeText: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 20,
   },
 });
 

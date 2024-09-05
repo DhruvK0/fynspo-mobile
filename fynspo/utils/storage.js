@@ -120,10 +120,10 @@ export const saveFilterState = async (filters) => {
 export const getFilterState = async () => {
   try {
     const filters = await AsyncStorage.getItem(FILTERS_KEY);
-    return filters ? JSON.parse(filters) : {};
+    return filters ? JSON.parse(filters) : { sort: '', filters: {} };
   } catch (error) {
     console.error('Error getting filter state:', error);
-    return {};
+    return { sort: '', filters: {} };
   }
 };
 
