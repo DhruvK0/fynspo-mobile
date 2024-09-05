@@ -165,7 +165,7 @@ export async function userInteraction(uid, fynspo_id, interaction_type, duration
   }
 }
 
-export async function getUserRecs(uid, category, sex, id_list, collection, collection_category, brand_list) {
+export async function getUserRecs(uid, category, sex, id_list, collection, collection_category, brand_list, price_low, price_high) {
   //only include the values that are not null
   const data = { uid: uid, category: category, sex: sex, id_list: id_list, collection: collection, collection_category: collection_category, brand_list: brand_list};
 
