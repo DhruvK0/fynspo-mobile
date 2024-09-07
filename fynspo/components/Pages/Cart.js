@@ -82,7 +82,7 @@ const ShoppingCartPage = () => {
       </View>
       {cartItems.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>Your cart is empty.</Text>
+          <Text style={styles.emptyStateText}>Your Cart is Empty</Text>
         </View>
       ) : (
         <>
@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
   },
   totalContainer: {

@@ -26,8 +26,15 @@ const SavedPage = () => {
   };
 
   return (
-    <View style={styles.container}>
+
+    //have text for no saved items
+    savedItems.length ? <View style={styles.container}>
       <SavedItemGrid items={savedItems} />
+    </View> :
+    <View style={styles.container}>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>No Saved Items</Text>
+      </View>
     </View>
   );
 };
@@ -37,10 +44,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
+  titleContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    margin: 20,   
+    margin: 20,
+    color: '#fff',   
   },
 });
 
