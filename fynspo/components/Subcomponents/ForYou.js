@@ -63,9 +63,9 @@ const ForYouPage = () => {
     return () => unsubscribe();
   }, [fetchFilters]);
 
-  useEffect(() => {
-    console.log('Filters:', filters);
-  }, [filters]);
+  // useEffect(() => {
+  //   console.log('Filters:', filters);
+  // }, [filters]);
 
   const fetchCategoryData = useCallback(async (category) => {
     if (loadingRef.current) return;
