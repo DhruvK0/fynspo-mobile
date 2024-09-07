@@ -15,18 +15,21 @@ const SubCollectionsView = ({ title, subCollections, onItemPress, onBack }) => {
         <Ionicons name="arrow-back" size={24} color="#fff" />
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
-      <FlatList
-        data={subCollections}
-        renderItem={({ item }) => (
-          <SubCollectionCard
-            title={item}
-            onPress={() => onItemPress(item)}
-          />
-        )}
-        keyExtractor={(item) => item}
-        numColumns={2}
-        contentContainerStyle={styles.gridContainer}
-      />
+      {subCollections.length === 0 ?
+        <Text style={styles.fillerContent}>Coming Soon...</Text> :
+        <FlatList
+          data={subCollections}
+          renderItem={({ item }) => (
+            <SubCollectionCard
+              title={item}
+              onPress={() => onItemPress(item)}
+            />
+          )}
+          keyExtractor={(item) => item}
+          numColumns={2}
+          contentContainerStyle={styles.gridContainer}
+        />
+      }
     </View>
   );
 };
@@ -67,6 +70,14 @@ const styles = StyleSheet.create({
     top: 10,
     left: 10,
     zIndex: 1,
+  },
+  fillerContent: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',  
+    paddingHorizontal: 20,
   },
 });
 

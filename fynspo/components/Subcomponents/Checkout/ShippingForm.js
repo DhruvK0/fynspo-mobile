@@ -33,6 +33,7 @@ const ShippingForm = ({ address, setAddress }) => {
         onError={(error) => { setAddressSheetVisible(false); }}
         additionalFields={{ phoneNumber: 'required' }}
         allowedCountries={['US']}
+        presentationStyle="fullscreen"
       />
       
       {renderAddress()}
