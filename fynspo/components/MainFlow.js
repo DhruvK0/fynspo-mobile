@@ -86,7 +86,8 @@ export default function MainFlow() {
                   }
 
                   if (iconName != 'bag' && iconName != 'bag-outline') {
-                    return <SvgComponent name={iconName} size={size} color={color} />;
+                    // return <SvgComponent name={iconName} size={size} color={color} />;
+                    return <Ionicons name={iconName} size={36} color={'white'} />;
                   } else {
                     return <Ionicons name={iconName} size={36} color={'white'} />;
                   }
