@@ -106,7 +106,7 @@ const CheckoutModal = ({ cartItems, isVisible, onClose }) => {
     };
     
     const tax = await calculateTaxAmount(customer_details, line_items);
-    setTaxAmount(tax.tax_calculation.tax_amount_exclusive);
+    setTaxAmount(tax.tax_calculation.tax_amount_exclusive / 100);
   };
 
   const handleClose = () => {
