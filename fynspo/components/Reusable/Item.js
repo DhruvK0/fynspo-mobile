@@ -16,6 +16,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { saveItemState, getItemState, subscribeToChanges } from '../../utils/storage';
 import { userInteraction } from '../../utils/requests';
 import ItemDetails from './ItemDetails';
+import * as Haptics from 'expo-haptics';
 import { useUser } from '@clerk/clerk-expo';
 
 const { height, width } = Dimensions.get('window');
@@ -96,6 +97,8 @@ const ItemComponent = ({ item, previousCloseModal}) => {
       duration: 300,
       useNativeDriver: true,
     }).start();
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }
 
 
@@ -137,6 +140,7 @@ const ItemComponent = ({ item, previousCloseModal}) => {
     event.stopPropagation();
     const newFavoriteState = !isFavorite;
     await saveItemState(item, newFavoriteState, isInBag);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (newFavoriteState) {
       await userInteraction(user.id, item.id, 'like', 0);
     }
@@ -165,14 +169,14 @@ const ItemComponent = ({ item, previousCloseModal}) => {
     .map(([key]) => key.replace('size_', ''));
 
   return (
-    <TouchableOpacity onPress={openModal} style={[styles.itemContainer, item.style]}>
+    <TouchableOpacity onPress={openModal} style={[styles.itemContainer, item.style]} activeOpacity={1}>
       <View style={styles.imageContainer}>
         <ImageComponent source={item.image} style={styles.image} />
         <TouchableOpacity style={styles.heartButton} onPress={toggleFavorite}>
          <FontAwesome 
             name={isFavorite ? "heart" : "heart-o" }
-            size={24} 
-            color={isFavorite ? "#8400ff" : "white"} 
+            size={14} 
+            color={isFavorite ? "#8400ff" : "grey"} 
         />
         </TouchableOpacity>
         <Modal
@@ -259,10 +263,12 @@ const styles = StyleSheet.create({
   },
   heartButton: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    borderRadius: 15,
-    padding: 5,
+    bottom: 5,
+    right: 5,
+    padding: 7,
+    //add a white circle around the heart icon
+    backgroundColor: '#E0E0E0',
+    borderRadius: 100,
   },
   infoContainer: {
     flex: 1,
