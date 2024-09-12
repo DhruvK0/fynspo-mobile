@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView, StatusBar, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ForYouPage from '../Subcomponents/ForYou';
@@ -78,7 +79,7 @@ const TikTokStyleComponent = () => {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={openFilter} style={styles.iconButton}>
-            <Ionicons name="menu" size={24} color="#fff" />
+            <MaterialCommunityIcons name="tune-variant" size={24} color="white" />
           </TouchableOpacity>
           <View style={styles.tabContainer}>
             {tabs.map((tab) => (
